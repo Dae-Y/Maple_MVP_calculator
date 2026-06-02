@@ -16,7 +16,22 @@
 
     <div class="hero-content">
       <div class="hero-top-row">
-        <a class="hero-nav-pill back-link" href="index.html">← 도구함으로 돌아가기</a>
+        <nav class="tools-nav" aria-label="도구 메뉴">
+          <button
+            class="tools-menu-button"
+            type="button"
+            aria-expanded="false"
+            aria-controls="toolsMenu"
+          >
+            ☰ 도구 메뉴
+          </button>
+
+          <div id="toolsMenu" class="tools-menu" hidden>
+            <a class="tools-menu-item" href="index.html">메인 페이지</a>
+            <a class="tools-menu-item" href="mvp-calculator.html">MVP작 계산기</a>
+            <a class="tools-menu-item is-active" href="cube-simulator.html">큐브 시뮬레이터</a>
+          </div>
+        </nav>
 
         <div style="display: flex; flex-direction: column; align-items: flex-end;">
           <div class="eyebrow brand-line">
@@ -354,6 +369,35 @@
   <script src="js/cube-simulator/autoRoll.js" defer></script>
   <script src="js/cube-simulator/cubeTips.js" defer></script>
   <script src="js/cube-simulator/cubeSimulator.js" defer></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const toolsMenuButton = document.querySelector(".tools-menu-button");
+      const toolsMenu = document.querySelector(".tools-menu");
+
+      if (toolsMenuButton && toolsMenu) {
+        toolsMenuButton.addEventListener("click", (event) => {
+          event.stopPropagation();
+          const isOpen = !toolsMenu.hidden;
+          toolsMenu.hidden = isOpen;
+          toolsMenuButton.setAttribute("aria-expanded", String(!isOpen));
+        });
+
+        document.addEventListener("click", (event) => {
+          if (!toolsMenu.hidden && !event.target.closest(".tools-nav")) {
+            toolsMenu.hidden = true;
+            toolsMenuButton.setAttribute("aria-expanded", "false");
+          }
+        });
+
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") {
+            toolsMenu.hidden = true;
+            toolsMenuButton.setAttribute("aria-expanded", "false");
+          }
+        });
+      }
+    });
+  </script>
 </body>
 
 </html>
