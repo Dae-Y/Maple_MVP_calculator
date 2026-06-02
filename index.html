@@ -16,7 +16,22 @@
 
     <div class="hero-content">
       <div class="hero-top-row">
-        <div class="hero-nav-pill">메인 도구함</div>
+        <nav class="tools-nav" aria-label="도구 메뉴">
+          <button
+            class="tools-menu-button"
+            type="button"
+            aria-expanded="false"
+            aria-controls="toolsMenu"
+          >
+            ☰ 도구 메뉴
+          </button>
+
+          <div id="toolsMenu" class="tools-menu" hidden>
+            <a class="tools-menu-item is-active" href="index.html">메인 페이지</a>
+            <a class="tools-menu-item" href="mvp-calculator.html">MVP작 계산기</a>
+            <a class="tools-menu-item" href="cube-simulator.html">큐브 시뮬레이터</a>
+          </div>
+        </nav>
 
         <div class="eyebrow brand-line">
           <img src="assets/brand/maple_logo.jpg" alt="MapleStory logo" class="brand-icon" />
@@ -133,6 +148,34 @@
   </footer>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
+      // 도구Dropdown 메뉴 동작
+      const toolsMenuButton = document.querySelector(".tools-menu-button");
+      const toolsMenu = document.querySelector(".tools-menu");
+
+      if (toolsMenuButton && toolsMenu) {
+        toolsMenuButton.addEventListener("click", (event) => {
+          event.stopPropagation();
+          const isOpen = !toolsMenu.hidden;
+          toolsMenu.hidden = isOpen;
+          toolsMenuButton.setAttribute("aria-expanded", String(!isOpen));
+        });
+
+        document.addEventListener("click", (event) => {
+          if (!toolsMenu.hidden && !event.target.closest(".tools-nav")) {
+            toolsMenu.hidden = true;
+            toolsMenuButton.setAttribute("aria-expanded", "false");
+          }
+        });
+
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") {
+            toolsMenu.hidden = true;
+            toolsMenuButton.setAttribute("aria-expanded", "false");
+          }
+        });
+      }
+
+      // 문의 / 후원 메뉴 동작
       const supportMenuBtn = document.getElementById("supportMenuBtn");
       const supportMenu = document.getElementById("supportMenu");
 
