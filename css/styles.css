@@ -2422,3 +2422,40 @@ button.save-button {
     white-space: normal;
   }
 }
+
+/* 리빙 포인트 모바일 반응형 스타일 */
+@media (max-width: 760px) {
+  .living-tip-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .living-tip-header h2.living-tip-title {
+    width: 100%;
+    max-width: 100%;
+    white-space: normal;
+    word-break: keep-all;
+    overflow-wrap: normal;
+    line-height: 1.3;
+    font-size: clamp(1.1rem, 5vw, 1.25rem);
+  }
+
+  .living-tip-controls {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 420px) {
+  .living-tip-controls {
+    gap: 6px;
+  }
+
+  .living-tip-controls button {
+    flex-shrink: 0;
+  }
+}
+
