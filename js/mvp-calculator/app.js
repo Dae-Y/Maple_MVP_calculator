@@ -334,7 +334,7 @@ function renderItemRows(items) {
             autocorrect="off"
             autocapitalize="off"
             spellcheck="false"
-            placeholder="경매장 가격 입력"
+            placeholder="예상 판매가격 입력"
           />
           <button
             class="btn-reset-auction"
