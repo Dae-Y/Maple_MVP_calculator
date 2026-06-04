@@ -860,12 +860,17 @@ function renderStrategySummary(strategy) {
 
   $("resultTitle").textContent = `계산 결과 - ${strategyName} 계산 결과 기준입니다.`;
 
+  const recoveryRate =
+    planResult.totalCashSpent > 0
+      ? `${((planResult.totalRecoveredCash / planResult.totalCashSpent) * 100).toFixed(2)}%`
+      : "-";
+
   $("summaryGrid").innerHTML = [
     makeSummaryBox("목표 MVP 등급", `${latestPlanResults.selectedTier.name} / ${formatCompactCash(latestPlanResults.targetMvp)}`),
     makeSummaryBox("실제 소모된 내 현금", formatKRW(planResult.actualCost)),
     makeSummaryBox("총 MVP 누적 / 사용 캐시", formatMvpAndSpent(planResult.currentMvp, planResult.totalCashSpent)),
     makeSummaryBox("총 회수 현금", formatKRW(planResult.totalRecoveredCash)),
-    makeSummaryBox("수수료 후 받은 총 메소", formatMeso(planResult.totalMesoAfterFee)),
+    makeSummaryBox("최종 회수율", recoveryRate),
     makeSummaryBox("총 마일리지 사용", `${formatNumber(planResult.totalMileageUsed)} 마일리지`),
     makeSummaryBox("총 마일리지 적립", `${formatNumber(planResult.totalMileageEarned)} 마일리지`),
     makeSummaryBox("최종 마일리지", `${formatNumber(planResult.mileage)} 마일리지`),
@@ -898,6 +903,8 @@ function renderPlanRows(plan) {
 
 function renderStrategyNotes(planResult, disableMileage) {
   const notes = [];
+
+  notes.push(`수수료 후 받은 총 메소는 ${formatMeso(planResult.totalMesoAfterFee)} 메소입니다.`);
 
   if (planResult.mvpAchieved) {
     notes.push("목표 MVP 금액을 달성했습니다. MVP 누적은 마일리지 할인 후 실제 넥슨캐시가 차감된 금액 기준으로 계산했습니다.");

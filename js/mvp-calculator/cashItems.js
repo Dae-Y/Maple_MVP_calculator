@@ -136,6 +136,8 @@ window.DEFAULT_CASH_ITEMS = [
 
 
 
+  /* 마일리지 적용 품목 */
+
 
   {
     id: "scissors",
@@ -144,6 +146,7 @@ window.DEFAULT_CASH_ITEMS = [
     icon: "scissors.png",
     mileageDiscount: true,
   },
+
   {
     id: "premium_hair",
     name: "프리미엄 헤쿠",
@@ -151,6 +154,7 @@ window.DEFAULT_CASH_ITEMS = [
     icon: "premium_hair.png",
     mileageDiscount: true,
   },
+
   {
     id: "premium_face",
     name: "프리미엄 성쿠",
@@ -158,6 +162,25 @@ window.DEFAULT_CASH_ITEMS = [
     icon: "premium_face.png",
     mileageDiscount: true,
   },
+
+  {
+    id: "mvp_super",
+    name: "MVP 슈퍼파워",
+    cashPrice: 3000,
+    icon: "mvp_super.png",
+    mileageDiscount: true,
+  },
+
+  {
+    id: "ubbu",
+    name: "마슈르 기상효과",
+    cashPrice: 3000,
+    icon: "ubbu.png",
+    mileageDiscount: true,
+  },
+
+
+  /*
   {
     id: "black_hair",
     name: "흑발 헤쿠",
@@ -165,6 +188,7 @@ window.DEFAULT_CASH_ITEMS = [
     icon: "black_hair.png",
     mileageDiscount: true,
   },
+
   {
     id: "white_eye",
     name: "백안 성쿠",
@@ -172,8 +196,7 @@ window.DEFAULT_CASH_ITEMS = [
     icon: "white_eye.png",
     mileageDiscount: true,
   },
-
-
+  */
 
 
 
