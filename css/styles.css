@@ -1555,6 +1555,54 @@ button.save-button {
   font-weight: 800;
 }
 
+.cube-stat-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.cube-stat-line .cube-stat-label {
+  margin-bottom: 0;
+}
+
+.cube-reset-count-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.cube-reset-count-row .cube-stat-label {
+  margin-bottom: 0;
+}
+
+.cube-reset-count-row .cube-stat-value {
+  font-variant-numeric: tabular-nums;
+}
+
+.cube-meso-stat {
+  display: grid;
+  gap: 4px;
+}
+
+.cube-meso-stat .cube-stat-label {
+  margin-bottom: 0;
+}
+
+.cube-meso-value {
+  display: block;
+  min-height: 1.45em;
+  line-height: 1.25;
+  font-size: 17px;
+  font-weight: 800;
+  color: #111827;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
 /* 큐브 로그 */
 .cube-log {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -1814,6 +1862,7 @@ button.save-button {
   font-size: 0.82rem;
   color: #4b5563;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .compact-select {
@@ -2413,6 +2462,26 @@ button.save-button {
     top: 24px;
     opacity: 0.92;
   }
+
+  .cube-log-controls {
+    gap: 6px;
+  }
+
+  .log-toggle-button,
+  .log-clear-button {
+    padding: 5px 8px;
+    font-size: 0.78rem;
+  }
+
+  .log-limit-control {
+    gap: 4px;
+    font-size: 0.78rem;
+  }
+
+  .compact-select {
+    padding: 3px 6px;
+    font-size: 0.78rem;
+  }
 }
 
 /* 큐브 시뮬레이터 현황 및 로그 그리드 */
@@ -2491,3 +2560,9 @@ button.save-button {
   }
 }
 
+@media (max-width: 560px) {
+  .cube-meso-value {
+    font-size: 15px;
+    letter-spacing: -0.01em;
+  }
+}

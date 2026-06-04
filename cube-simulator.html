@@ -279,8 +279,14 @@
             <h2>재설정 현황</h2>
             <div class="cube-stats-grid">
               <div class="cube-stat-box">
-                <div class="cube-stat-label" id="rollCountTag">재설정 횟수: 0회</div>
-                <div class="cube-stat-value" id="mesoTag">소모 메소: 0 메소</div>
+                <div class="cube-reset-count-row">
+                  <span class="cube-stat-label" id="rollCountLabel">재설정 횟수</span>
+                  <strong class="cube-stat-value" id="rollCountValue">0회</strong>
+                </div>
+                <div class="cube-stat-block cube-meso-stat" id="mesoContainer">
+                  <span class="cube-stat-label">소모 메소</span>
+                  <strong class="cube-meso-value" id="mesoValue">0</strong>
+                </div>
                 <div id="azmosTag"
                   style="display: none; color: #6b7280; font-size: 13px; margin-top: 8px; font-weight: 700;">아즈모스 협곡
                   1만점: 0주 분량</div>
@@ -296,7 +302,7 @@
               <h2 class="cube-log-title">상세 로그</h2>
               <div class="cube-log-controls">
                 <label class="log-limit-control">
-                  <span>표시 개수</span>
+                  <span>표시</span>
                   <select id="logLimitSelect" class="select-input compact-select">
                     <option value="10">10회</option>
                     <option value="50">50회</option>
@@ -305,7 +311,7 @@
                   </select>
                 </label>
                 <button class="log-toggle-button" id="toggleLogBtn">펼치기</button>
-                <button class="log-clear-button" id="clearLogBtn">로그 초기화</button>
+                <button class="log-clear-button" id="clearLogBtn">초기화</button>
               </div>
             </div>
             <div class="cube-log" id="log" style="display: none;"></div>

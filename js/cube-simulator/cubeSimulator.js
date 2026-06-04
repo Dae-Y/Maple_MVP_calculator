@@ -591,13 +591,16 @@ window.cubeSimulatorState = (function () {
     const cubeKind = getSelectedCubeKind();
     const stats = window.cubeSimulatorState.getStats();
 
-    const countEl = document.getElementById("rollCountTag");
-    const costEl = document.getElementById("mesoTag");
+    const countLabelEl = document.getElementById("rollCountLabel");
+    const countValueEl = document.getElementById("rollCountValue");
+    const mesoContainer = document.getElementById("mesoContainer");
+    const mesoValueEl = document.getElementById("mesoValue");
     const azmosEl = document.getElementById("azmosTag");
 
     if (cubeKind === "meister") {
-      countEl.textContent = `소모된 명장의 큐브: ${stats.meisterUsed}개`;
-      costEl.style.display = "none";
+      if (countLabelEl) countLabelEl.textContent = "소모된 명장의 큐브";
+      if (countValueEl) countValueEl.textContent = `${stats.meisterUsed.toLocaleString("ko-KR")}개`;
+      if (mesoContainer) mesoContainer.style.display = "none";
       if (azmosEl) {
         if (SHOW_AZMOS_ESTIMATE) {
           azmosEl.style.display = "block";
@@ -608,9 +611,11 @@ window.cubeSimulatorState = (function () {
         }
       }
     } else {
-      countEl.textContent = `재설정 횟수: ${stats.rollCount}회`;
-      costEl.style.display = "block";
-      costEl.textContent = `소모 메소: ${formatMesoKorean(stats.mesoUsed)}`;
+      if (countLabelEl) countLabelEl.textContent = "재설정 횟수";
+      if (countValueEl) countValueEl.textContent = `${stats.rollCount.toLocaleString("ko-KR")}회`;
+      if (mesoContainer) mesoContainer.style.display = "";
+      const formattedMeso = formatMesoKorean(stats.mesoUsed).replace(/\s*메소$/, "");
+      if (mesoValueEl) mesoValueEl.textContent = formattedMeso;
       if (azmosEl) azmosEl.style.display = "none";
     }
   }
