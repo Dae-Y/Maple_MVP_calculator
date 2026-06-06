@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>메이플 사냥 타이머</title>
+  <link rel="icon" type="image/jpeg" href="assets/favicon/favicon.jpg" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="js/hunting-timer/app.js" defer></script>
+</head>
+
+<body class="hunting-timer-page">
+  <header class="hero">
+    <div class="hero-bg-orb orb-one"></div>
+    <div class="hero-bg-orb orb-two"></div>
+
+    <div class="hero-content">
+      <div class="hero-top-row">
+        <nav class="tools-nav" aria-label="도구 메뉴">
+          <button
+            class="tools-menu-button"
+            type="button"
+            aria-expanded="false"
+            aria-controls="toolsMenu"
+          >
+            ☰ 도구 메뉴
+          </button>
+
+          <div id="toolsMenu" class="tools-menu" hidden>
+            <a class="tools-menu-item" href="index.html">메인 페이지</a>
+            <a class="tools-menu-item" href="mvp-calculator.html">MVP작 계산기</a>
+            <a class="tools-menu-item" href="cube-simulator.html">큐브 시뮬레이터</a>
+            <a class="tools-menu-item is-active" href="hunting-timer.html">사냥 타이머</a>
+          </div>
+        </nav>
+
+        <div class="eyebrow brand-line">
+          <img src="assets/brand/maple_logo.jpg" alt="MapleStory logo" class="brand-icon" />
+          <span>MapleStory Hunting Timer</span>
+        </div>
+      </div>
+
+      <h1>
+        사냥 타이머
+        <span class="creator">
+          By
+          <img src="assets/brand/elysium.png" alt="Elysium server icon" class="server-icon" />
+          끗르
+        </span>
+      </h1>
+
+      <p class="subtitle">
+        재획, 소재비, 설치기 재설치 타이밍을 놓치지 않도록 도와주는 간단한 사냥용 타이머입니다.
+      </p>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- 백그라운드 지연 경고 배너 -->
+    <div class="warning-banner" role="alert">
+      <span class="warning-banner-icon">⚠️</span>
+      <div>
+        <strong>주의 사항:</strong> 모바일 기기 또는 브라우저 백그라운드 환경(탭이 비활성화된 경우)에서는 기기 자체의 절전 모드나 리소스 제한 정책으로 인해 알림음 재생 및 타이머 타이밍이 다소 지연되거나 작동하지 않을 수 있습니다. 정확한 작동을 위해 화면을 켜두는 것을 권장합니다.
+      </div>
+    </div>
+
+    <div class="hunting-timer-grid">
+      <!-- 타이머 및 설정 영역 (왼쪽 컬럼) -->
+      <div class="timer-main-area">
+        <!-- 메인 세션 타이머 카드 -->
+        <section class="card session-timer-card">
+          <div class="timer-card-header timer-card-heading-row">
+            <h2 class="timer-card-title">사냥 세션 타이머</h2>
+            <button id="btnSessionDemo" class="timer-demo-button" type="button">데모</button>
+          </div>
+          
+          <div class="timer-display timer-display-with-icon">
+            <div class="countdown-overlay hidden" id="countdownOverlay">
+              <div class="countdown-number" id="countdownNumber">3</div>
+            </div>
+            <img src="assets/hunting-timer/clock.png" alt="시계 아이콘" class="timer-display-icon" />
+            <span id="sessionTimerDisplay">30:00</span>
+          </div>
+          
+          <div class="hunting-session-action-row">
+            <div class="material-count-wrap">
+              <img src="assets/hunting-timer/wealth_small.png" alt="소재비 아이콘" class="material-count-icon" />
+              <div class="material-count-control">
+                <button id="btnMaterialMinus" class="material-count-button" type="button" aria-label="소재 감소">-</button>
+                <span id="materialCountValue" class="material-count-value">1소재</span>
+                <button id="btnMaterialPlus" class="material-count-button" type="button" aria-label="소재 증가">+</button>
+              </div>
+            </div>
+
+            <div class="timer-controls compact-timer-controls">
+              <button id="btnSessionStart" class="btn-start" type="button">시작</button>
+              <button id="btnSessionPause" class="btn-pause" type="button" disabled>일시정지</button>
+              <button id="btnSessionReset" class="btn-reset" type="button">초기화</button>
+            </div>
+          </div>
+
+          <!-- 알림 메시지 표시 영역 -->
+          <div id="sessionCompleteMessage" class="timer-alert session-complete-message" role="status">
+            1소재가 끝났습니다! 사냥 더 하실거면 도핑 체크 하세요
+          </div>
+        </section>
+
+        <!-- 설치기/주기성 스킬 타이머 카드 -->
+        <section class="card skill-timer-card install-timer-card">
+          <div class="timer-card-header">
+            <h2 class="timer-card-title">설치기 / 버프 재설치 타이머</h2>
+          </div>
+
+          <div class="timer-display-group">
+            <div class="install-timer-container">
+              <div class="install-timer-display">
+                <img src="assets/hunting-timer/janus.png" alt="솔 야누스 아이콘" class="install-timer-display-icon" />
+                <span class="install-timer-label">시간 :</span>
+                <strong id="skillTimerDisplay">01:00</strong>
+              </div>
+            </div>
+
+            <div class="install-timer-container erda-timer-container hidden" id="erdaTimerDisplayContainer">
+              <div class="install-timer-display">
+                <img src="assets/hunting-timer/erda_shower.png" alt="에르다 샤워 아이콘" class="install-timer-display-icon" />
+                <span class="install-timer-label">시간 :</span>
+                <strong id="erdaTimerDisplay">01:00</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="install-option-row janus-option-row">
+            <img src="assets/hunting-timer/janus.png" alt="솔 야누스 아이콘" class="install-option-icon" />
+            <span class="install-option-name">솔 야누스</span>
+            <div class="janus-level-buttons">
+              <button class="btn-preset-skill active" data-seconds="60" type="button">1렙</button>
+              <button class="btn-preset-skill" data-seconds="70" type="button">10렙</button>
+              <button class="btn-preset-skill" data-seconds="80" type="button">20렙</button>
+              <button class="btn-preset-skill" data-seconds="120" type="button">30렙</button>
+            </div>
+          </div>
+
+          <div class="install-option-row erda-option-row">
+            <img src="assets/hunting-timer/erda_shower.png" alt="에르다 샤워 아이콘" class="install-option-icon" />
+            <span class="install-option-name">에르다 샤워</span>
+            <div class="erda-toggle-buttons">
+              <button id="btnErdaEnabled" class="btn-preset-erda" type="button" data-enabled="true">사용</button>
+              <button id="btnErdaDisabled" class="btn-preset-erda active" type="button" data-enabled="false">미사용</button>
+            </div>
+          </div>
+
+          <!-- 알림 메시지 표시 영역 -->
+          <div id="skillAlertMessage" class="timer-alert" role="status">
+            야누스 재설치 시간입니다!
+          </div>
+          <div id="erdaAlertMessage" class="timer-alert" role="status">
+            에르다 샤워 재설치 시간입니다!
+          </div>
+        </section>
+      </div>
+
+      <!-- 우측 사이드바: 사냥 체크리스트 -->
+      <aside class="checklist-sidebar">
+        <section class="card checklist-card">
+          <div class="timer-card-header">
+            <h2 class="timer-card-title">사냥 준비 체크리스트</h2>
+          </div>
+          <p style="color: #6b7280; font-size: 13.5px; margin: -10px 0 15px; line-height: 1.4;">
+            사냥 시작 전에 잊기 쉬운 버프와 아이템 확인용 체크리스트입니다. 체크 상태는 브라우저에 저장됩니다.
+          </p>
+
+          <div class="checklist-list">
+            <label class="checklist-item">
+              <input type="checkbox" class="chk-reminder" data-index="0" />
+              <span>소재비 사용 (재획비 / 재물 획득의 비약)</span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" class="chk-reminder" data-index="1" />
+              <span>경험치 쿠폰 (경쿠 / MVP 경쿠)</span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" class="chk-reminder" data-index="2" />
+              <span>유니온/링크/버프 확인 (유니온의 힘 등)</span>
+            </label>
+            <label class="checklist-item">
+              <input type="checkbox" class="chk-reminder" data-index="3" />
+              <span>설치기 타이머 켜기</span>
+            </label>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="footer page-footer">
+    <div class="footer-notices">
+      <div class="footer-notices-ko">
+        <p>※ 이 페이지는 넥슨에서 공식 지원하거나 운영하는 페이지가 아닌 개인 제작 타이머입니다.</p>
+        <p>※ 타이머와 알림음은 브라우저 상태, 기기 절전 모드, 백그라운드 제한 등에 따라 정확하지 않거나 지연될 수 있습니다.</p>
+        <p>※ MapleStory 및 관련 아이콘/이미지의 권리는 Nexon에 있습니다.</p>
+      </div>
+
+      <hr class="footer-divider" />
+
+      <div class="footer-notices-en">
+        <p>※ This is a fan-made timer and is not officially supported or operated by Nexon.</p>
+        <p>※ Timer and sound behavior may vary or be delayed depending on browser state, device power saving mode, and background restrictions.</p>
+        <p>※ All rights to MapleStory and related icons/images belong to Nexon.</p>
+      </div>
+    </div>
+
+    <nav class="footer-links" aria-label="사이트 정보 링크">
+      <a href="about.html">소개</a>
+      <span aria-hidden="true">·</span>
+      <a href="contact.html">문의</a>
+      <span aria-hidden="true">·</span>
+      <a href="privacy.html">개인정보처리방침</a>
+      <span aria-hidden="true">·</span>
+      <a href="updates.html">업데이트 내역</a>
+    </nav>
+
+    <div class="footer-copy">
+      <p>© 2026 끗르. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const toolsMenuButton = document.querySelector(".tools-menu-button");
+      const toolsMenu = document.querySelector(".tools-menu");
+
+      if (toolsMenuButton && toolsMenu) {
+        toolsMenuButton.addEventListener("click", (event) => {
+          event.stopPropagation();
+          const isOpen = !toolsMenu.hidden;
+          toolsMenu.hidden = isOpen;
+          toolsMenuButton.setAttribute("aria-expanded", String(!isOpen));
+        });
+
+        document.addEventListener("click", (event) => {
+          if (!toolsMenu.hidden && !event.target.closest(".tools-nav")) {
+            toolsMenu.hidden = true;
+            toolsMenuButton.setAttribute("aria-expanded", "false");
+          }
+        });
+
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") {
+            toolsMenu.hidden = true;
+            toolsMenuButton.setAttribute("aria-expanded", "false");
+          }
+        });
+      }
+    });
+  </script>
+</body>
+
+</html>

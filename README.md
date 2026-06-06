@@ -18,6 +18,7 @@ AI-readable project summary: [`llms.txt`](./llms.txt)
 - 메이플 도구함: https://dae-y.github.io/maple_tools/
 - MVP작 계산기: https://dae-y.github.io/maple_tools/mvp-calculator.html
 - 큐브 시뮬레이터: https://dae-y.github.io/maple_tools/cube-simulator.html
+- 사냥 타이머: https://dae-y.github.io/maple_tools/hunting-timer.html
 
 ---
 
@@ -64,6 +65,19 @@ AI-readable project summary: [`llms.txt`](./llms.txt)
 - 리빙 포인트 확률 팁
 - 모바일 반응형 UI
 
+### 사냥 타이머
+
+30분 사냥 타이머와 설치기 재설치 주기를 함께 관리하는 간단한 타이머입니다.
+
+주요 기능:
+
+- 30분 사냥/버프 세션 타이머 (10분 / 20분 / 30분 프리셋 제공)
+- 반복되는 설치기/스킬 타이머 (60초 / 70초 / 80초 / 120초 프리셋 제공)
+- 타이머 만료 시 Web Audio API를 이용한 알림음 재생 및 시각적 경고 출력
+- 설치기 타이머 자동 재시작 기능
+- 사냥 전 체크용 간단한 버프/소비 아이템 체크리스트 제공 (상태 자동 저장)
+- 모바일 반응형 UI 지원
+
 ---
 
 ## 정보 페이지
@@ -86,6 +100,7 @@ maple_tools/
 ├── index.html
 ├── mvp-calculator.html
 ├── cube-simulator.html
+├── hunting-timer.html
 ├── about.html
 ├── contact.html
 ├── privacy.html
@@ -113,13 +128,15 @@ maple_tools/
 │   │   ├── app.js
 │   │   ├── cashItems.js
 │   │   └── mesoMarket.js
-│   └── cube-simulator/
-│       ├── autoRoll.js
-│       ├── cubeData.js
-│       ├── cubeGoals.js
-│       ├── cubeRoller.js
-│       ├── cubeSimulator.js
-│       └── cubeTips.js
+│   ├── cube-simulator/
+│   │   ├── autoRoll.js
+│   │   ├── cubeData.js
+│   │   ├── cubeGoals.js
+│   │   ├── cubeRoller.js
+│   │   ├── cubeSimulator.js
+│   │   └── cubeTips.js
+│   └── hunting-timer/
+│       └── app.js
 └── scripts/
     ├── crop-character-image.mjs
     └── update-cube-probabilities.mjs
@@ -141,6 +158,7 @@ python3 -m http.server 8000
 http://localhost:8000/
 http://localhost:8000/mvp-calculator.html
 http://localhost:8000/cube-simulator.html
+http://localhost:8000/hunting-timer.html
 http://localhost:8000/about.html
 http://localhost:8000/privacy.html
 http://localhost:8000/contact.html
