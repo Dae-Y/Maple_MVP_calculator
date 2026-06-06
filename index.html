@@ -17,12 +17,7 @@
     <div class="hero-content">
       <div class="hero-top-row">
         <nav class="tools-nav" aria-label="도구 메뉴">
-          <button
-            class="tools-menu-button"
-            type="button"
-            aria-expanded="false"
-            aria-controls="toolsMenu"
-          >
+          <button class="tools-menu-button" type="button" aria-expanded="false" aria-controls="toolsMenu">
             ☰ 도구 메뉴
           </button>
 
@@ -118,7 +113,7 @@
             <span class="hub-card-badge badge-active">사용 가능</span>
           </div>
           <p class="hub-card-desc">
-            30분 사냥 시간과 60초/70초/80초/120초 설치기 재설치 타이밍을 함께 관리합니다.
+            사냥에 필요한 재획비, 솔 야누스, 에르다 샤워 타이머를 함께 관리합니다.
           </p>
         </div>
         <div class="hub-card-footer">
@@ -176,28 +171,73 @@
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       // 도구Dropdown 메뉴 동작
+      const toolsNav = document.querySelector(".tools-nav");
       const toolsMenuButton = document.querySelector(".tools-menu-button");
       const toolsMenu = document.querySelector(".tools-menu");
+ 
+      if (toolsNav && toolsMenuButton && toolsMenu) {
+        let isToolsMenuPinned = false;
 
-      if (toolsMenuButton && toolsMenu) {
-        toolsMenuButton.addEventListener("click", (event) => {
+        const openToolsMenu = () => {
+          toolsMenu.hidden = false;
+          toolsMenuButton.setAttribute("aria-expanded", "true");
+        };
+
+        const closeToolsMenu = () => {
+          toolsMenu.hidden = true;
+          toolsMenuButton.setAttribute("aria-expanded", "false");
+          isToolsMenuPinned = false;
+        };
+
+        const pinToolsMenu = () => {
+          isToolsMenuPinned = true;
+          openToolsMenu();
+        };
+
+        const handleButtonClick = (event) => {
+          event.preventDefault();
           event.stopPropagation();
-          const isOpen = !toolsMenu.hidden;
-          toolsMenu.hidden = isOpen;
-          toolsMenuButton.setAttribute("aria-expanded", String(!isOpen));
-        });
 
+          const isOpen = !toolsMenu.hidden;
+
+          if (isOpen && isToolsMenuPinned) {
+            closeToolsMenu();
+            return;
+          }
+
+          pinToolsMenu();
+        };
+
+        // Desktop hover-to-open logic
+        const canHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+        if (canHover) {
+          toolsNav.addEventListener("mouseenter", openToolsMenu);
+          toolsNav.addEventListener("mouseleave", () => {
+            if (!isToolsMenuPinned) {
+              closeToolsMenu();
+            }
+          });
+
+          toolsNav.addEventListener("focusin", openToolsMenu);
+          toolsNav.addEventListener("focusout", (event) => {
+            if (!toolsNav.contains(event.relatedTarget)) {
+              closeToolsMenu();
+            }
+          });
+        }
+
+        // Click handler (mobile tap & desktop click behavior)
+        toolsMenuButton.addEventListener("click", handleButtonClick);
+ 
         document.addEventListener("click", (event) => {
-          if (!toolsMenu.hidden && !event.target.closest(".tools-nav")) {
-            toolsMenu.hidden = true;
-            toolsMenuButton.setAttribute("aria-expanded", "false");
+          if (!toolsNav.contains(event.target)) {
+            closeToolsMenu();
           }
         });
-
+ 
         document.addEventListener("keydown", (event) => {
           if (event.key === "Escape") {
-            toolsMenu.hidden = true;
-            toolsMenuButton.setAttribute("aria-expanded", "false");
+            closeToolsMenu();
           }
         });
       }
