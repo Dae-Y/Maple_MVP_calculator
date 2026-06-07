@@ -73,6 +73,37 @@
   // Web Audio Context (지연 초기화)
   let audioCtx = null;
 
+  // 뽀모도로 Constants & DOM elements
+  const POMODORO_FOCUS_MS = 25 * 60 * 1000;
+  const POMODORO_SHORT_BREAK_MS = 5 * 60 * 1000;
+  const POMODORO_LONG_BREAK_MS = 15 * 60 * 1000;
+  const POMODORO_MAX_FOCUS = 4;
+
+  const pomodoroCard = document.querySelector(".pomodoro-card");
+  const pomodoroHeader = document.getElementById("pomodoroHeader");
+  const btnPomodoroToggle = document.getElementById("btnPomodoroToggle");
+  const pomodoroBody = document.getElementById("pomodoroBody");
+  const pomodoroDisplay = document.getElementById("pomodoroDisplay");
+  const pomodoroModeText = document.getElementById("pomodoroModeText");
+  const pomodoroFocusCounter = document.getElementById("pomodoroFocusCounter");
+  const pomodoroBreakCounter = document.getElementById("pomodoroBreakCounter");
+  const pomodoroAlertMessage = document.getElementById("pomodoroAlertMessage");
+  
+  const btnPomodoroStart = document.getElementById("btnPomodoroStart");
+  const btnPomodoroPause = document.getElementById("btnPomodoroPause");
+  const btnPomodoroReset = document.getElementById("btnPomodoroReset");
+
+  // 뽀모도로 States
+  let pomodoroMode = "focus"; // focus | shortBreak | longBreak
+  let pomodoroFocusCount = 0;
+  let pomodoroBreakCount = 0;
+  let remainingPomodoroMs = POMODORO_FOCUS_MS;
+  let pomodoroEndAt = null;
+  let isPomodoroRunning = false;
+  let pomodoroIntervalId = null;
+  let pomodoroTransitionTimeoutId = null;
+  let pomodoroFlashTimeoutId = null;
+
   // 1. 초기값 및 로컬스토리지 로드
   function init() {
     loadSettings();
@@ -153,6 +184,24 @@
         console.error("Failed to parse checklist states:", e);
       }
     }
+
+    // 뽀모도로 접기/펼치기 상태 로드
+    const savedPomodoroCollapsed = localStorage.getItem("maple_tools_pomodoro_collapsed");
+    if (savedPomodoroCollapsed === "false") {
+      if (pomodoroCard) pomodoroCard.classList.remove("is-collapsed");
+      if (pomodoroBody) pomodoroBody.hidden = false;
+      if (btnPomodoroToggle) {
+        btnPomodoroToggle.textContent = "접기";
+        btnPomodoroToggle.setAttribute("aria-expanded", "true");
+      }
+    } else {
+      if (pomodoroCard) pomodoroCard.classList.add("is-collapsed");
+      if (pomodoroBody) pomodoroBody.hidden = true;
+      if (btnPomodoroToggle) {
+        btnPomodoroToggle.textContent = "펼치기";
+        btnPomodoroToggle.setAttribute("aria-expanded", "false");
+      }
+    }
   }
 
   // 로컬스토리지에 현재 설정값 저장
@@ -190,6 +239,9 @@
     updateMaterialDisplay();
     updateDemoButtonState();
     updateJanusDescription();
+    updatePomodoroDisplay();
+    updatePomodoroModeText();
+    updatePomodoroCounters();
   }
 
   function updateJanusDescription() {
@@ -929,6 +981,231 @@
     resetTimers();
   }
 
+  // --- 뽀모도로 타이머 함수 시작 ---
+  function togglePomodoroCollapse() {
+    const isCollapsed = pomodoroCard.classList.toggle("is-collapsed");
+    if (pomodoroBody) {
+      pomodoroBody.hidden = isCollapsed;
+    }
+    if (btnPomodoroToggle) {
+      btnPomodoroToggle.textContent = isCollapsed ? "펼치기" : "접기";
+      btnPomodoroToggle.setAttribute("aria-expanded", !isCollapsed);
+    }
+    localStorage.setItem("maple_tools_pomodoro_collapsed", isCollapsed);
+  }
+
+  function startPomodoro() {
+    if (isPomodoroRunning) return;
+
+    initAudio();
+
+    isPomodoroRunning = true;
+    pomodoroEndAt = Date.now() + remainingPomodoroMs;
+
+    if (btnPomodoroStart) btnPomodoroStart.disabled = true;
+    if (btnPomodoroPause) btnPomodoroPause.disabled = false;
+
+    pomodoroIntervalId = setInterval(() => {
+      const currentTime = Date.now();
+      remainingPomodoroMs = pomodoroEndAt - currentTime;
+
+      if (remainingPomodoroMs <= 0) {
+        remainingPomodoroMs = 0;
+        updatePomodoroDisplay();
+        handlePomodoroPhaseComplete();
+        return;
+      }
+
+      updatePomodoroDisplay();
+    }, 100);
+  }
+
+  function pausePomodoro() {
+    if (pomodoroTransitionTimeoutId) {
+      clearTimeout(pomodoroTransitionTimeoutId);
+      pomodoroTransitionTimeoutId = null;
+      transitionToNextPomodoroPhase(false); // Move to next phase paused
+      return;
+    }
+
+    if (!isPomodoroRunning) return;
+
+    isPomodoroRunning = false;
+    if (pomodoroIntervalId) {
+      clearInterval(pomodoroIntervalId);
+      pomodoroIntervalId = null;
+    }
+
+    const currentTime = Date.now();
+    remainingPomodoroMs = Math.max(0, pomodoroEndAt - currentTime);
+
+    if (btnPomodoroStart) btnPomodoroStart.disabled = false;
+    if (btnPomodoroPause) btnPomodoroPause.disabled = true;
+    updatePomodoroDisplay();
+  }
+
+  function resetPomodoro() {
+    if (pomodoroIntervalId) {
+      clearInterval(pomodoroIntervalId);
+      pomodoroIntervalId = null;
+    }
+    if (pomodoroTransitionTimeoutId) {
+      clearTimeout(pomodoroTransitionTimeoutId);
+      pomodoroTransitionTimeoutId = null;
+    }
+
+    isPomodoroRunning = false;
+    pomodoroMode = "focus";
+    pomodoroFocusCount = 0;
+    pomodoroBreakCount = 0;
+    remainingPomodoroMs = POMODORO_FOCUS_MS;
+
+    hidePomodoroAlert();
+    
+    if (pomodoroCard) {
+      pomodoroCard.classList.remove("is-pomodoro-flashing");
+    }
+    if (pomodoroFlashTimeoutId) {
+      clearTimeout(pomodoroFlashTimeoutId);
+      pomodoroFlashTimeoutId = null;
+    }
+
+    updatePomodoroDisplay();
+    updatePomodoroModeText();
+    updatePomodoroCounters();
+
+    if (btnPomodoroStart) btnPomodoroStart.disabled = false;
+    if (btnPomodoroPause) btnPomodoroPause.disabled = true;
+  }
+
+  function updatePomodoroDisplay() {
+    if (pomodoroDisplay) {
+      pomodoroDisplay.textContent = formatMs(remainingPomodoroMs);
+    }
+  }
+
+  function updatePomodoroModeText() {
+    const modeIcon = document.querySelector(".pomodoro-icon");
+    if (pomodoroModeText) {
+      if (pomodoroMode === "focus") {
+        pomodoroModeText.textContent = "집중 — 방해 금지, 한 작업만";
+        if (modeIcon) modeIcon.textContent = "📚";
+      } else if (pomodoroMode === "shortBreak") {
+        pomodoroModeText.textContent = "휴식 — 자리에서 일어나기, 물 마시기, 스트레칭";
+        if (modeIcon) modeIcon.textContent = "🥤";
+      } else if (pomodoroMode === "longBreak") {
+        pomodoroModeText.textContent = "긴 휴식 — 오래 앉아 있었으니 충분히 쉬어가기";
+        if (modeIcon) modeIcon.textContent = "🥤";
+      }
+    }
+  }
+
+  function updatePomodoroCounters() {
+    if (pomodoroFocusCounter) {
+      pomodoroFocusCounter.textContent = `집중 ${pomodoroFocusCount} / 4`;
+    }
+    if (pomodoroBreakCounter) {
+      pomodoroBreakCounter.textContent = `휴식 ${pomodoroBreakCount}`;
+    }
+  }
+
+  function handlePomodoroPhaseComplete() {
+    if (pomodoroIntervalId) {
+      clearInterval(pomodoroIntervalId);
+      pomodoroIntervalId = null;
+    }
+    isPomodoroRunning = false;
+
+    // Play beep sound (existing install alert beep function)
+    playAlertSound("skill");
+
+    // Flash card softly
+    flashPomodoroCard();
+
+    // Determine message and count increments
+    let alertMsg = "";
+    if (pomodoroMode === "focus") {
+      pomodoroFocusCount++;
+      alertMsg = "집중 시간이 끝났습니다! 잠깐 쉬어가세요.";
+    } else if (pomodoroMode === "shortBreak") {
+      pomodoroBreakCount++;
+      alertMsg = "휴식이 끝났습니다! 다시 집중할 시간입니다.";
+    } else if (pomodoroMode === "longBreak") {
+      pomodoroFocusCount = 0;
+      pomodoroBreakCount = 0;
+      alertMsg = "긴 휴식이 끝났습니다! 새 뽀모도로를 시작할 준비가 됐습니다.";
+    }
+    showPomodoroAlert(alertMsg);
+    updatePomodoroCounters();
+
+    // Disable start/pause button during transition
+    if (btnPomodoroStart) btnPomodoroStart.disabled = true;
+    if (btnPomodoroPause) btnPomodoroPause.disabled = false; // Allow skip/pause during transition
+
+    pomodoroTransitionTimeoutId = setTimeout(() => {
+      pomodoroTransitionTimeoutId = null;
+      transitionToNextPomodoroPhase(true); // Auto start next phase
+    }, 2000);
+  }
+
+  function transitionToNextPomodoroPhase(autoStart) {
+    if (pomodoroMode === "focus") {
+      if (pomodoroFocusCount >= POMODORO_MAX_FOCUS) {
+        pomodoroMode = "longBreak";
+        remainingPomodoroMs = POMODORO_LONG_BREAK_MS;
+      } else {
+        pomodoroMode = "shortBreak";
+        remainingPomodoroMs = POMODORO_SHORT_BREAK_MS;
+      }
+    } else {
+      pomodoroMode = "focus";
+      remainingPomodoroMs = POMODORO_FOCUS_MS;
+    }
+
+    hidePomodoroAlert();
+    updatePomodoroModeText();
+    updatePomodoroDisplay();
+
+    if (btnPomodoroStart) btnPomodoroStart.disabled = false;
+    if (btnPomodoroPause) btnPomodoroPause.disabled = true;
+
+    if (autoStart) {
+      startPomodoro();
+    }
+  }
+
+  // Flash card animation
+  function flashPomodoroCard() {
+    if (!pomodoroCard) return;
+
+    pomodoroCard.classList.remove("is-pomodoro-flashing");
+    void pomodoroCard.offsetWidth; // trigger reflow
+    pomodoroCard.classList.add("is-pomodoro-flashing");
+
+    if (pomodoroFlashTimeoutId) {
+      clearTimeout(pomodoroFlashTimeoutId);
+    }
+    pomodoroFlashTimeoutId = setTimeout(() => {
+      pomodoroCard.classList.remove("is-pomodoro-flashing");
+      pomodoroFlashTimeoutId = null;
+    }, 2200);
+  }
+
+  function showPomodoroAlert(msg) {
+    if (pomodoroAlertMessage) {
+      pomodoroAlertMessage.textContent = msg;
+      pomodoroAlertMessage.classList.add("show");
+    }
+  }
+
+  function hidePomodoroAlert() {
+    if (pomodoroAlertMessage) {
+      pomodoroAlertMessage.classList.remove("show");
+      pomodoroAlertMessage.textContent = "";
+    }
+  }
+  // --- 뽀모도로 타이머 함수 끝 ---
+
   // 5. 이벤트 리스너 바인딩
   function setupEventListeners() {
     // 세션 타이머 제어
@@ -977,6 +1254,20 @@
         saveChecklist();
       });
     });
+
+    // 뽀모도로 타이머 제어
+    if (pomodoroHeader) {
+      pomodoroHeader.addEventListener("click", togglePomodoroCollapse);
+    }
+    if (btnPomodoroStart) {
+      btnPomodoroStart.addEventListener("click", startPomodoro);
+    }
+    if (btnPomodoroPause) {
+      btnPomodoroPause.addEventListener("click", pausePomodoro);
+    }
+    if (btnPomodoroReset) {
+      btnPomodoroReset.addEventListener("click", resetPomodoro);
+    }
   }
 
   // 타이머 작동 시작

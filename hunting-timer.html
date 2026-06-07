@@ -165,6 +165,45 @@
             에르다 샤워 재설치 시간입니다!
           </div>
         </section>
+
+        <!-- 뽀모도로 타이머 카드 (잠수용) -->
+        <section class="card pomodoro-card is-collapsed">
+          <div class="pomodoro-header" id="pomodoroHeader">
+            <div class="pomodoro-header-text">
+              <h2 class="timer-card-title">뽀모도로 타이머</h2>
+              <p class="timer-card-desc pomodoro-card-desc">
+                잠수맵에 세워두고 공부나 작업을 할 때 사용하기 좋은 집중 타이머입니다.
+              </p>
+            </div>
+            <button id="btnPomodoroToggle" class="pomodoro-toggle" type="button" aria-expanded="false">
+              펼치기
+            </button>
+          </div>
+
+          <div id="pomodoroBody" class="pomodoro-body" hidden>
+            <div class="pomodoro-display">
+              <span class="pomodoro-icon" aria-hidden="true">📚</span>
+              <strong id="pomodoroDisplay">25:00</strong>
+            </div>
+
+            <p id="pomodoroModeText" class="pomodoro-mode-text">
+              집중 — 방해 금지, 한 작업만
+            </p>
+
+            <div class="timer-controls compact-timer-controls pomodoro-controls">
+              <button id="btnPomodoroStart" class="btn-start" type="button">시작</button>
+              <button id="btnPomodoroPause" class="btn-pause" type="button" disabled>일시정지</button>
+              <button id="btnPomodoroReset" class="btn-reset" type="button">초기화</button>
+            </div>
+
+            <div class="pomodoro-counters">
+              <span id="pomodoroFocusCounter" class="pomodoro-counter-item">집중 0 / 4</span>
+              <span id="pomodoroBreakCounter" class="pomodoro-counter-item">휴식 0</span>
+            </div>
+
+            <div id="pomodoroAlertMessage" class="timer-alert pomodoro-alert-message" role="status"></div>
+          </div>
+        </section>
       </div>
 
       <!-- 우측 사이드바: 사냥 체크리스트 -->
