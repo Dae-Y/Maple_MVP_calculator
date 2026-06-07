@@ -52,7 +52,7 @@ label span {
 /* --- Hero Section 시작 --- */
 .hero {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   background:
     radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.32), transparent 28%),
     radial-gradient(circle at 85% 15%, rgba(252, 211, 77, 0.32), transparent 26%),
