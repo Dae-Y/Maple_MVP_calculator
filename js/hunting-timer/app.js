@@ -3,10 +3,18 @@
   const MATERIAL_DURATION_MS = 30 * 60 * 1000; // 실사용: 1소재 = 30분
   // const MATERIAL_DURATION_MS = 30 * 1000; // 테스트용: 1소재 = 30초
 
+  const JANUS_LEVEL_DESCRIPTIONS = {
+    60: "야누스 1렙은 구체 1개, 지속시간 60초입니다. 에르다 샤워 사용을 권장합니다.",
+    70: "야누스 10렙은 구체 2개, 지속시간 70초입니다. 에르다 샤워를 사용해도 좋습니다.",
+    80: "야누스 20렙은 구체 3개, 지속시간 80초입니다.",
+    120: "야누스 30렙은 구체 3개, 지속시간 120초입니다."
+  };
+
   // DOM 요소
   const sessionDisplay = document.getElementById("sessionTimerDisplay");
   const skillDisplay = document.getElementById("skillTimerDisplay");
   const skillAlertMessage = document.getElementById("skillAlertMessage");
+  const janusLevelDescription = document.getElementById("janusLevelDescription");
 
   const erdaTimerDisplay = document.getElementById("erdaTimerDisplay");
   const erdaTimerDisplayContainer = document.getElementById("erdaTimerDisplayContainer");
@@ -56,6 +64,8 @@
   // 데모 및 플래시 관련 상태 변수
   let isSessionDemoRunning = false;
   let demoCountdownTimerId = null;
+  let demoTransitionTimeoutId = null;
+  let demoCleanupTimeoutId = null;
   let demoCountdownValue = 5;
   let sessionFlashTimeoutId = null;
   let installFlashTimeoutId = null;
@@ -179,6 +189,13 @@
     }
     updateMaterialDisplay();
     updateDemoButtonState();
+    updateJanusDescription();
+  }
+
+  function updateJanusDescription() {
+    if (janusLevelDescription) {
+      janusLevelDescription.textContent = JANUS_LEVEL_DESCRIPTIONS[selectedSkillSeconds] || "";
+    }
   }
 
   function updateMaterialDisplay() {
@@ -405,9 +422,12 @@
       // 솔 야누스 타이머 틱
       if (!isSkillAlerting) {
         remainingSkillMs = skillEndAt - currentTime;
+        if (remainingSkillMs < 0) {
+          remainingSkillMs = 0;
+        }
 
-        // 설치기 타이머 만료 시
-        if (remainingSkillMs <= 0) {
+        // 설치기 타이머 만료 시 (에르다 샤워 미사용일 때만 독자 만료)
+        if (remainingSkillMs <= 0 && !isErdaEnabled) {
           triggerSkillAlert();
         }
       } else {
@@ -418,10 +438,13 @@
       if (isErdaEnabled) {
         if (!isErdaAlerting) {
           remainingErdaMs = erdaEndAt - currentTime;
+          if (remainingErdaMs < 0) {
+            remainingErdaMs = 0;
+          }
 
-          // 에르다 샤워 만료 시
+          // 에르다 샤워 만료 시 (싱크 만료로 처리)
           if (remainingErdaMs <= 0) {
-            triggerErdaAlert();
+            triggerErdaSyncAlert();
           }
         } else {
           remainingErdaMs = 0;
@@ -495,6 +518,40 @@
 
     erdaEndAt = Date.now() + (60 * 1000);
     remainingErdaMs = 60 * 1000;
+    updateDisplays();
+  }
+
+  function triggerErdaSyncAlert() {
+    if (isErdaAlerting || isSkillAlerting) return;
+
+    isErdaAlerting = true;
+    isSkillAlerting = true;
+    remainingErdaMs = 0;
+    remainingSkillMs = 0;
+    updateDisplays();
+
+    showErdaAlert();
+    showSkillAlert();
+
+    playAlertSound("erda");
+    flashInstallCard();
+
+    erdaRestartTimeoutId = setTimeout(finishErdaSyncAlert, 2000);
+  }
+
+  function finishErdaSyncAlert() {
+    if (!isRunning) return;
+    isErdaAlerting = false;
+    isSkillAlerting = false;
+    erdaRestartTimeoutId = null;
+    hideErdaAlert();
+    hideSkillAlert();
+
+    remainingErdaMs = 60 * 1000;
+    remainingSkillMs = selectedSkillSeconds * 1000;
+
+    erdaEndAt = Date.now() + remainingErdaMs;
+    skillEndAt = Date.now() + remainingSkillMs;
     updateDisplays();
   }
 
@@ -574,7 +631,7 @@
     hideErdaAlert();
 
     // 데모 상태 해제
-    if (isSessionDemoRunning) {
+    if (isSessionDemoRunning || demoCleanupTimeoutId) {
       cleanupDemoState();
     }
 
@@ -627,6 +684,8 @@
     if (isRunning || isCountingDown || isSessionDemoRunning || (remainingSessionMs !== selectedMaterialCount * MATERIAL_DURATION_MS)) return;
 
     hideSessionCompleteMessage();
+    hideSkillAlert();
+    hideErdaAlert();
 
     isSessionDemoRunning = true;
     updateDemoButtonState();
@@ -635,7 +694,35 @@
     btnSessionStart.disabled = true;
     btnSessionPause.disabled = true;
 
-    demoCountdownValue = 3;
+    // First and only countdown: Session completion demo (3 -> 2 -> 1)
+    runDemoCountdown(3, () => {
+      // Trigger session complete effects
+      playSessionCompleteSound();
+      flashSessionCard();
+      showSessionCompleteMessage();
+
+      // Wait 800ms, then directly trigger install demo alerts (Janus & Erda) without second countdown
+      demoTransitionTimeoutId = setTimeout(() => {
+        demoTransitionTimeoutId = null;
+
+        playAlertSound("skill");
+        flashInstallCard();
+
+        // Show both messages regardless of settings to preview both alert types
+        showSkillAlert();
+        showErdaAlert();
+
+        // Schedule automatic cleanup after 3 seconds
+        demoCleanupTimeoutId = setTimeout(() => {
+          demoCleanupTimeoutId = null;
+          cleanupDemoState();
+        }, 3000);
+      }, 800);
+    });
+  }
+
+  function runDemoCountdown(startValue, onComplete) {
+    demoCountdownValue = startValue;
     const overlay = document.getElementById("countdownOverlay");
     const numEl = document.getElementById("countdownNumber");
 
@@ -667,16 +754,7 @@
           overlay.classList.add("hidden");
         }
         demoCountdownTimerId = null;
-        
-        playSessionCompleteSound();
-        flashSessionCard();
-        showSessionCompleteMessage();
-        
-        setTimeout(() => {
-          alert("사냥 세션 종료 알림 데모입니다.");
-        }, 50);
-
-        cleanupDemoState();
+        onComplete();
       }
     }
 
@@ -689,15 +767,47 @@
       clearTimeout(demoCountdownTimerId);
       demoCountdownTimerId = null;
     }
+    if (demoTransitionTimeoutId) {
+      clearTimeout(demoTransitionTimeoutId);
+      demoTransitionTimeoutId = null;
+    }
+    if (demoCleanupTimeoutId) {
+      clearTimeout(demoCleanupTimeoutId);
+      demoCleanupTimeoutId = null;
+    }
     
     const overlay = document.getElementById("countdownOverlay");
     if (overlay) {
       overlay.classList.add("hidden");
     }
 
-    btnSessionStart.disabled = false;
-    btnSessionPause.disabled = true;
-    togglePresetButtonsDisabled(false);
+    hideSessionCompleteMessage();
+    hideSkillAlert();
+    hideErdaAlert();
+
+    const sessionCard = document.querySelector(".session-timer-card");
+    if (sessionCard) {
+      sessionCard.classList.remove("is-session-complete-flashing");
+    }
+    if (sessionFlashTimeoutId) {
+      clearTimeout(sessionFlashTimeoutId);
+      sessionFlashTimeoutId = null;
+    }
+
+    const installCard = document.querySelector(".install-timer-card");
+    if (installCard) {
+      installCard.classList.remove("is-install-alert-flashing");
+    }
+    if (installFlashTimeoutId) {
+      clearTimeout(installFlashTimeoutId);
+      installFlashTimeoutId = null;
+    }
+
+    if (!isRunning) {
+      btnSessionStart.disabled = false;
+      btnSessionPause.disabled = true;
+      togglePresetButtonsDisabled(false);
+    }
     updateDemoButtonState();
   }
 

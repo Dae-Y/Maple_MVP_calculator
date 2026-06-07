@@ -3222,4 +3222,65 @@ button.save-button {
   }
 }
 
+
+.install-timer-desc {
+  color: #6b7280;
+  font-size: 13.5px;
+  margin: -10px 0 15px;
+  line-height: 1.4;
+}
+
+
+.timer-demo-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.timer-demo-tooltip {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 8px);
+  transform: translateX(-50%) translateY(-2px);
+  min-width: 220px;
+  max-width: 270px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(31, 41, 55, 0.95);
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.22);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 8000;
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s ease;
+}
+
+.timer-demo-wrap:hover .timer-demo-tooltip,
+.timer-demo-wrap:focus-within .timer-demo-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+@media (max-width: 430px) {
+  .timer-demo-tooltip {
+    left: 0;
+    transform: translateY(-2px);
+    min-width: 190px;
+    max-width: 230px;
+    text-align: left;
+  }
+
+  .timer-demo-wrap:hover .timer-demo-tooltip,
+  .timer-demo-wrap:focus-within .timer-demo-tooltip {
+    transform: translateY(0);
+  }
+}
+
 /* --- 사냥 타이머 추가 스타일 끝 --- */
