@@ -4,11 +4,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>메이플 도구함</title>
+  <title>주간보스 수익 계산기</title>
   <link rel="icon" type="image/jpeg" href="assets/favicon/favicon.jpg" />
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/layout.css" />
   <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/boss-income-calculator.css" />
 </head>
 
 <body>
@@ -24,143 +25,89 @@
           </button>
 
           <div id="toolsMenu" class="tools-menu" hidden>
-            <a class="tools-menu-item is-active" href="index.html">메인 페이지</a>
+            <a class="tools-menu-item" href="index.html">메인 페이지</a>
             <a class="tools-menu-item" href="mvp-calculator.html">MVP작 계산기</a>
             <a class="tools-menu-item" href="cube-simulator.html">큐브 시뮬레이터</a>
             <a class="tools-menu-item" href="hunting-timer.html">사냥 타이머</a>
-            <a class="tools-menu-item" href="boss-income-calculator.html">주간보스 수익 계산기</a>
+            <a class="tools-menu-item is-active" href="boss-income-calculator.html">주간보스 수익 계산기</a>
           </div>
         </nav>
 
         <div class="eyebrow brand-line">
           <img src="assets/brand/maple_logo.jpg" alt="MapleStory logo" class="brand-icon" />
-          <span>MapleStory Tools Hub</span>
+          <span>MapleStory Boss Income Calculator</span>
         </div>
       </div>
 
-      <div class="hero-main-row">
-        <div class="hero-text-block">
-          <div class="hero-title-row">
-            <h1>메이플 도구함</h1>
-            <span class="creator">
-              By
-              <img src="assets/brand/elysium.png" alt="Elysium server icon" class="server-icon" />
-              끗르
-            </span>
-          </div>
+      <h1>
+        주간보스 수익 계산기
+        <span class="creator">
+          By
+          <img src="assets/brand/elysium.png" alt="Elysium server icon" class="server-icon" />
+          끗르
+        </span>
+      </h1>
 
-          <p class="subtitle">
-            유용한 메이플스토리 관련 도구를 모아 둔 페이지입니다.
-          </p>
-        </div>
-
-        <img src="assets/brand/character-cropped.png" alt="끗르 캐릭터" class="hero-character" />
-
-        <div class="hero-side-block">
-          <div class="support-menu-wrap">
-            <button id="supportMenuBtn" class="support-button" type="button" aria-expanded="false"
-              aria-controls="supportMenu">
-              문의 / 후원하기
-            </button>
-
-            <!-- Replace these support links with the real Open KakaoTalk and PayPal URLs. -->
-            <div id="supportMenu" class="support-menu" hidden>
-              <a href="https://open.kakao.com/o/ssNHeD5d" target="_blank" rel="noopener noreferrer">오픈카톡</a>
-              <a href="https://paypal.me/daey1" target="_blank" rel="noopener noreferrer">PayPal</a>
-            </div>
-          </div>
-        </div>
-      </div>
+      <p class="subtitle">
+        캐릭터별 주간 보스 결정석 수익과 주간 판매 개수를 간단하게 계산합니다.
+      </p>
     </div>
   </header>
 
   <main class="container">
-    <div class="hub-grid">
-      <!-- Card 1: MVP작 계산기 -->
-      <a href="mvp-calculator.html" class="hub-card">
-        <div>
-          <div class="hub-card-header">
-            <h2 class="hub-card-title">MVP작 계산기</h2>
-            <span class="hub-card-badge badge-active">사용 가능</span>
+    <div class="boss-income-page">
+      <!-- Summary and warnings -->
+      <section class="boss-summary-card">
+        <div class="boss-summary-grid">
+          <div class="boss-summary-item">
+            <span>주간 판매 개수</span>
+            <strong><span id="crystalCount">0</span> / 90 개</strong>
           </div>
-          <p class="hub-card-desc">
-            캐시 아이템 경매장 가격, 마일리지, 물통비율을 입력해 목표 MVP 등급까지 예상 손실과 구매 조합을 계산합니다.
-          </p>
+          <div class="boss-summary-item">
+            <span>예상 수익</span>
+            <strong class="boss-total-meso"><span id="totalMeso">0</span> 메소</strong>
+          </div>
         </div>
-        <div class="hub-card-footer">
-          도구 바로가기 →
-        </div>
-      </a>
 
-      <!-- Card 2: 큐브 시뮬레이터 -->
-      <a href="cube-simulator.html" class="hub-card">
-        <div>
-          <div class="hub-card-header">
-            <h2 class="hub-card-title">큐브 시뮬레이터</h2>
-            <span class="hub-card-badge badge-active">사용 가능</span>
+        <div class="boss-limit-meter-container">
+          <div class="boss-limit-meter-label">
+            <span>주간 결정석 판매 제한 (최대 90개)</span>
+            <span>90개 기준</span>
           </div>
-          <p class="hub-card-desc">
-            큐브 잠재능력 옵션의 확률과 예상 비용을 시뮬레이션합니다.
-          </p>
+          <div class="boss-limit-meter">
+            <div id="limitMeterBar" class="boss-limit-meter-bar"></div>
+          </div>
         </div>
-        <div class="hub-card-footer">
-          도구 바로가기 →
-        </div>
-      </a>
 
-      <!-- Card 3: 사냥 타이머 -->
-      <a href="hunting-timer.html" class="hub-card">
-        <div>
-          <div class="hub-card-header">
-            <h2 class="hub-card-title">사냥 타이머</h2>
-            <span class="hub-card-badge badge-active">사용 가능</span>
+        <!-- Warning Area -->
+        <div id="weeklyLimitWarning"></div>
+        <div id="characterLimitWarning">
+          <div class="boss-helper-text">
+            캐릭터당 주간 보스 결정석은 최대 12개까지 판매 가능합니다.
           </div>
-          <p class="hub-card-desc">
-            사냥에 필요한 재획비, 솔 야누스, 에르다 샤워 타이머를 함께 관리합니다.
-          </p>
         </div>
-        <div class="hub-card-footer">
-          도구 바로가기 →
-        </div>
-      </a>
 
-      <!-- Card 4: 주간보스 수익 계산기 -->
-      <a href="boss-income-calculator.html" class="hub-card">
-        <div>
-          <div class="hub-card-header">
-            <h2 class="hub-card-title">주간보스 수익 계산기</h2>
-            <span class="hub-card-badge badge-active">사용 가능</span>
-          </div>
-          <p class="hub-card-desc">
-            캐릭터별 주간 보스 결정석 수익과 주간 판매 개수를 계산합니다.
-          </p>
+        <div class="boss-actions-row">
+          <button id="resetBtn" class="secondary" type="button">선택 초기화</button>
         </div>
-        <div class="hub-card-footer">
-          도구 바로가기 →
-        </div>
-      </a>
+      </section>
 
-      <!-- Card 4: 추가 도구 예정 -->
-      <div class="hub-card disabled">
-        <div>
-          <div class="hub-card-header">
-            <h2 class="hub-card-title">추가 도구 예정</h2>
-            <span class="hub-card-badge badge-placeholder">예정</span>
-          </div>
-          <p class="hub-card-desc">
-            필요한 도구를 계속 추가할 예정입니다.
-          </p>
+      <!-- Boss List Board -->
+      <section class="card boss-board">
+        <div class="boss-board-header">
+          <h2>보스 목록</h2>
         </div>
-        <div class="hub-card-footer">
-          개발 대기 중
+        <div id="bossList" class="boss-list">
+          <!-- Dynamically populated from JS -->
         </div>
-      </div>
+      </section>
     </div>
   </main>
 
   <footer class="footer page-footer">
     <div class="footer-notices">
       <div class="footer-notices-ko">
+        <p>※ 결정석 가격과 판매 제한은 패치에 따라 변경될 수 있습니다. 계산 결과는 참고용입니다.</p>
         <p>※ 이 페이지는 넥슨에서 공식 지원하거나 운영하는 페이지가 아닌 개인 제작 도구 모음입니다.</p>
         <p>※ MapleStory 및 관련 아이콘/이미지의 권리는 Nexon에 있습니다.</p>
       </div>
@@ -168,6 +115,7 @@
       <hr class="footer-divider" />
 
       <div class="footer-notices-en">
+        <p>※ Boss crystal prices and weekly limits may change with game updates. Calculation results are for reference only.</p>
         <p>※ This is a fan-made tools hub and is not officially supported or operated by Nexon.</p>
         <p>※ All rights to MapleStory and related icons/images belong to Nexon.</p>
       </div>
@@ -187,6 +135,8 @@
       <p>© 2026 끗르. All rights reserved.</p>
     </div>
   </footer>
+
+  <!-- Dropdown Menu Logic (Same as standard pages) -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       // 도구Dropdown 메뉴 동작
@@ -287,40 +237,12 @@
           }
         });
       }
-
-      // 문의 / 후원 메뉴 동작
-      const supportMenuBtn = document.getElementById("supportMenuBtn");
-      const supportMenu = document.getElementById("supportMenu");
-
-      if (supportMenuBtn && supportMenu) {
-        const closeMenu = () => {
-          supportMenu.hidden = true;
-          supportMenuBtn.setAttribute("aria-expanded", "false");
-        };
-
-        supportMenuBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const isHidden = supportMenu.hidden;
-          supportMenu.hidden = !isHidden;
-          supportMenuBtn.setAttribute("aria-expanded", isHidden ? "true" : "false");
-        });
-
-        // Close on clicking outside
-        document.addEventListener("click", (e) => {
-          if (!supportMenuBtn.contains(e.target) && !supportMenu.contains(e.target)) {
-            closeMenu();
-          }
-        });
-
-        // Close on Escape key
-        document.addEventListener("keydown", (e) => {
-          if (e.key === "Escape") {
-            closeMenu();
-          }
-        });
-      }
     });
   </script>
+
+  <!-- Script links at bottom -->
+  <script src="js/boss-income-calculator/bossData.js"></script>
+  <script src="js/boss-income-calculator/app.js"></script>
 </body>
 
 </html>

@@ -19,6 +19,7 @@ AI-readable project summary: [`llms.txt`](./llms.txt)
 - MVP작 계산기: https://dae-y.github.io/maple_tools/mvp-calculator.html
 - 큐브 시뮬레이터: https://dae-y.github.io/maple_tools/cube-simulator.html
 - 사냥 타이머: https://dae-y.github.io/maple_tools/hunting-timer.html
+- 주간보스 수익 계산기: https://dae-y.github.io/maple_tools/boss-income-calculator.html
 
 ---
 
@@ -101,6 +102,7 @@ maple_tools/
 ├── mvp-calculator.html
 ├── cube-simulator.html
 ├── hunting-timer.html
+├── boss-income-calculator.html
 ├── about.html
 ├── contact.html
 ├── privacy.html
@@ -115,8 +117,10 @@ maple_tools/
 │   ├── mvp-calculator/
 │   │   ├── items/
 │   │   └── tiers/
-│   └── cube-simulator/
-│       └── potential/
+│   ├── cube-simulator/
+│   │   └── potential/
+│   └── boss-income-calculator/
+│       └── boss-icons/
 ├── css/
 │   ├── base.css
 │   ├── layout.css
@@ -124,6 +128,7 @@ maple_tools/
 │   ├── mvp-calculator.css
 │   ├── cube-simulator.css
 │   ├── hunting-timer.css
+│   ├── boss-income-calculator.css
 │   ├── info-pages.css
 │   ├── styles.css          # legacy fallback/importer
 │   └── README.md
@@ -144,7 +149,10 @@ maple_tools/
 │   │   ├── cubeRoller.js
 │   │   ├── cubeSimulator.js
 │   │   └── cubeTips.js
-│   └── hunting-timer/
+│   ├── hunting-timer/
+│   │   └── app.js
+│   └── boss-income-calculator/
+│       ├── bossData.js
 │       └── app.js
 └── scripts/
     ├── crop-character-image.mjs
