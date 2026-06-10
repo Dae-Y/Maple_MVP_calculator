@@ -112,8 +112,9 @@ maple_tools/
 │   ├── brand/
 │   ├── favicon/
 │   ├── fonts/
-│   ├── icons/
-│   ├── mvp/
+│   ├── mvp-calculator/
+│   │   ├── items/
+│   │   └── tiers/
 │   └── potential/
 ├── css/
 │   ├── base.css

@@ -1,5 +1,5 @@
-const ICON_BASE = "assets/icons/";
-const MVP_ICON_BASE = "assets/mvp/";
+const ICON_BASE = "assets/mvp-calculator/items/";
+const MVP_ICON_BASE = "assets/mvp-calculator/tiers/";
 const FALLBACK_ICON = `${ICON_BASE}fallback.png`;
 const AUCTION_FEE_RATE = 0.03;
 const STORAGE_KEY = "maple_mvp_calculator_state_v1";

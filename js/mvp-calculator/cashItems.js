@@ -15,7 +15,7 @@
     mileageDiscount: false,
   }
 
-  icon은 assets/icons/ 안에 넣기.
+  icon은 assets/mvp-calculator/items/ 안에 넣기.
   mileageDiscount: true  -> 마일리지 적용 품목
   mileageDiscount: false -> 마일리지 미적용 품목
 */
