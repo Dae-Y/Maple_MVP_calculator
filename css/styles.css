@@ -1,9 +1,12 @@
 /*
   Maple Tools legacy stylesheet entrypoint.
 
-  Phase 1 CSS refactor:
-  Existing HTML pages still load css/styles.css.
-  This file imports the split CSS files in the intended cascade order.
+  This file is kept for backwards compatibility and quick rollback.
+  Current HTML pages load modular CSS files directly:
+  base.css → layout.css → components.css → page-specific CSS.
+
+  New pages should not link to styles.css directly.
+  Use the modular CSS files instead.
 */
 
 @import url("./base.css");

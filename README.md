@@ -116,8 +116,15 @@ maple_tools/
 │   ├── mvp/
 │   └── potential/
 ├── css/
-│   ├── styles.css
-│   └── info-pages.css
+│   ├── base.css
+│   ├── layout.css
+│   ├── components.css
+│   ├── mvp-calculator.css
+│   ├── cube-simulator.css
+│   ├── hunting-timer.css
+│   ├── info-pages.css
+│   ├── styles.css          # legacy fallback/importer
+│   └── README.md
 ├── data/
 │   └── cube-simulator/
 │       ├── acprobs.json
@@ -219,7 +226,7 @@ assets/brand/character-cropped.png
 
 ```text
 index.html
-css/styles.css
+css/ (modular CSS files)
 새 도구 HTML 파일
 새 도구 JS 폴더
 ```
