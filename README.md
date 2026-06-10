@@ -115,7 +115,8 @@ maple_tools/
 │   ├── mvp-calculator/
 │   │   ├── items/
 │   │   └── tiers/
-│   └── potential/
+│   └── cube-simulator/
+│       └── potential/
 ├── css/
 │   ├── base.css
 │   ├── layout.css

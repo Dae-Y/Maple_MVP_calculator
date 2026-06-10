@@ -388,7 +388,7 @@ window.cubeSimulatorState = (function () {
   }
 
   // UI render bindings
-  const POTENTIAL_ICON_BASE = "assets/potential/";
+  const POTENTIAL_ICON_BASE = "assets/cube-simulator/potential/";
 
   const POTENTIAL_GRADE_ICONS = {
     rare: `${POTENTIAL_ICON_BASE}rare.png`,
