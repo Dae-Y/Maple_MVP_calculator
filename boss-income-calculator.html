@@ -57,50 +57,126 @@
   <main class="container">
     <div class="boss-income-page">
       <!-- Summary and warnings -->
-      <section class="boss-summary-card">
-        <div class="boss-summary-grid">
-          <div class="boss-summary-item">
-            <span>주간 판매 개수</span>
-            <strong><span id="crystalCount">0</span> / 90 개</strong>
+      <section class="boss-dashboard">
+        <div class="boss-summary-card boss-summary-card--compact">
+          <div class="boss-summary-grid-left">
+            <div class="boss-summary-item">
+              <span class="boss-overview-label">주간 판매 개수 (전체)</span>
+              <strong class="boss-overview-value"><span id="crystalCount">0</span> / 90 개</strong>
+            </div>
+            <div class="boss-summary-item">
+              <span class="boss-overview-label">예상 수익 (전체)</span>
+              <strong class="boss-overview-value boss-total-meso"><span id="totalMeso">0</span> 메소</strong>
+            </div>
           </div>
-          <div class="boss-summary-item">
-            <span>예상 수익</span>
-            <strong class="boss-total-meso"><span id="totalMeso">0</span> 메소</strong>
+          <div class="boss-limit-meter-container">
+            <div class="boss-limit-meter">
+              <div id="limitMeterBar" class="boss-limit-meter-bar"></div>
+            </div>
           </div>
+          <!-- Warning Area -->
+          <div id="weeklyLimitWarning"></div>
         </div>
 
-        <div class="boss-limit-meter-container">
-          <div class="boss-limit-meter-label">
-            <span>주간 결정석 판매 제한 (최대 90개)</span>
-            <span>90개 기준</span>
+        <div class="boss-time-card">
+          <div class="boss-time-item">
+            <span class="boss-overview-label">현재 시간</span>
+            <strong id="bossCurrentTime" class="time-display">-</strong>
           </div>
-          <div class="boss-limit-meter">
-            <div id="limitMeterBar" class="boss-limit-meter-bar"></div>
+          <div class="boss-time-item">
+            <span class="boss-overview-label">주간보스 초기화까지</span>
+            <strong id="bossResetCountdown" class="countdown-display">-</strong>
           </div>
-        </div>
-
-        <!-- Warning Area -->
-        <div id="weeklyLimitWarning"></div>
-        <div id="characterLimitWarning">
-          <div class="boss-helper-text">
-            캐릭터당 주간 보스 결정석은 최대 12개까지 판매 가능합니다.
-          </div>
-        </div>
-
-        <div class="boss-actions-row">
-          <button id="resetBtn" class="secondary" type="button">선택 초기화</button>
         </div>
       </section>
 
-      <!-- Boss List Board -->
-      <section class="card boss-board">
-        <div class="boss-board-header">
-          <h2>보스 목록</h2>
-        </div>
-        <div id="bossList" class="boss-list">
-          <!-- Dynamically populated from JS -->
-        </div>
-      </section>
+      <!-- 3-Column Layout Container -->
+      <div class="boss-income-layout">
+        
+        <!-- Left Column: Character management -->
+        <section class="card character-column">
+          <h2>캐릭터</h2>
+          
+          <!-- Character Form -->
+          <form id="addCharForm" class="add-char-form" onsubmit="event.preventDefault();">
+            <div class="input-row">
+              <input type="text" id="charNameInput" placeholder="캐릭터명" required maxlength="12" />
+              <input type="text" id="charJobInput" placeholder="직업" maxlength="15" />
+            </div>
+            <div class="character-form-actions">
+              <button id="addCharacterButton" type="button" class="btn-add-char">추가</button>
+              <button id="saveCharacterButton" type="button" class="btn-save-char">저장</button>
+            </div>
+          </form>
+
+          <!-- Character Card List -->
+          <div id="characterList" class="character-list">
+            <!-- Dynamically populated -->
+          </div>
+        </section>
+
+        <!-- Middle Column: Boss Selection -->
+        <section class="card boss-column">
+          <div class="boss-board-header">
+            <h2>보스 목록</h2>
+            <span class="active-char-badge" id="activeCharBadge">선택된 캐릭터 없음</span>
+          </div>
+          <div id="bossList" class="boss-list">
+            <!-- Dynamically populated from JS -->
+          </div>
+        </section>
+
+        <!-- Right Column: Summary for selected character / weekly limit -->
+        <section class="card summary-column">
+          <h2>선택 현황</h2>
+          
+          <div class="selected-char-info" id="selectedCharInfo">
+            <p class="no-char-selected-msg">선택된 캐릭터가 없습니다. 캐릭터를 추가하고 선택하세요.</p>
+          </div>
+
+          <div class="summary-details">
+            <div class="summary-row">
+              <span>캐릭터 결정석</span>
+              <strong id="charCrystalCount">0 / 12</strong>
+            </div>
+            <div class="summary-row">
+              <span>캐릭터 예상 수익</span>
+              <strong id="charMesoCount">0 메소</strong>
+            </div>
+            <hr class="summary-divider" />
+            <div class="summary-row">
+              <span>전체 결정석</span>
+              <strong id="totalCrystalCount">0 / 90</strong>
+            </div>
+            <div class="summary-row">
+              <span>전체 예상 수익</span>
+              <strong id="totalMesoCount" class="boss-total-meso">0 메소</strong>
+            </div>
+          </div>
+
+          <!-- Helper & Warnings inside right column -->
+          <div class="warnings-area">
+            <div id="charLimitWarning" class="boss-helper-text">
+              캐릭터당 주간 보스 결정석은 최대 12개까지 판매 가능합니다.
+            </div>
+            <div id="totalLimitWarning"></div>
+          </div>
+
+          <!-- Active character selected boss list -->
+          <div class="selected-boss-list-container">
+            <h3>선택한 보스</h3>
+            <ul id="selectedBossList" class="selected-boss-list">
+              <!-- Dynamically populated -->
+            </ul>
+          </div>
+
+          <div class="summary-actions">
+            <button id="resetCharBtn" class="secondary" type="button">선택 캐릭터 초기화</button>
+            <button id="resetAllBtn" class="danger-btn" type="button">전체 초기화</button>
+          </div>
+        </section>
+
+      </div>
     </div>
   </main>
 

@@ -2,6 +2,7 @@
 .hero {
   position: relative;
   overflow: visible;
+  z-index: 100;
   background:
     radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.32), transparent 28%),
     radial-gradient(circle at 85% 15%, rgba(252, 211, 77, 0.32), transparent 26%),
@@ -132,6 +133,8 @@ h1 {
 /* --- Hero Section 끝 --- */
 
 .container {
+  position: relative;
+  z-index: 1;
   max-width: 1100px;
   margin: 32px auto;
   padding: 0 20px;

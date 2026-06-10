@@ -15,7 +15,7 @@ const BOSS_DATA = [
   {
     id: "magnus",
     name: "매그너스",
-    icon: "magnus.webp",
+    icon: "magnus.png",
     forceType: null,
     difficulties: [
       { id: "easy", label: "이지", price: 1200000 },
@@ -26,7 +26,7 @@ const BOSS_DATA = [
   {
     id: "hilla",
     name: "힐라",
-    icon: "hilla.webp",
+    icon: "hilla.png",
     forceType: null,
     difficulties: [
       { id: "normal", label: "노멀", price: 1500000 },
@@ -36,7 +36,7 @@ const BOSS_DATA = [
   {
     id: "kaung",
     name: "카웅",
-    icon: "kaung.webp",
+    icon: "kaung.png",
     forceType: null,
     difficulties: [
       { id: "normal", label: "노멀", price: 2000000 }
@@ -56,7 +56,7 @@ const BOSS_DATA = [
   {
     id: "vonbon",
     name: "반반",
-    icon: "vonbon.webp",
+    icon: "vonbon.png",
     forceType: null,
     difficulties: [
       { id: "normal", label: "노멀", price: 1500000 },
@@ -66,7 +66,7 @@ const BOSS_DATA = [
   {
     id: "pierre",
     name: "피에르",
-    icon: "pierre.webp",
+    icon: "pierre.png",
     forceType: null,
     difficulties: [
       { id: "normal", label: "노멀", price: 1500000 },
