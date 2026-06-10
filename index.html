@@ -179,13 +179,23 @@
  
       if (toolsNav && toolsMenuButton && toolsMenu) {
         let isToolsMenuPinned = false;
+        let toolsMenuCloseTimeoutId = null;
+
+        const clearToolsMenuCloseTimeout = () => {
+          if (toolsMenuCloseTimeoutId) {
+            window.clearTimeout(toolsMenuCloseTimeoutId);
+            toolsMenuCloseTimeoutId = null;
+          }
+        };
 
         const openToolsMenu = () => {
+          clearToolsMenuCloseTimeout();
           toolsMenu.hidden = false;
           toolsMenuButton.setAttribute("aria-expanded", "true");
         };
 
         const closeToolsMenu = () => {
+          clearToolsMenuCloseTimeout();
           toolsMenu.hidden = true;
           toolsMenuButton.setAttribute("aria-expanded", "false");
           isToolsMenuPinned = false;
@@ -216,7 +226,24 @@
           toolsNav.addEventListener("mouseenter", openToolsMenu);
           toolsNav.addEventListener("mouseleave", () => {
             if (!isToolsMenuPinned) {
-              closeToolsMenu();
+              clearToolsMenuCloseTimeout();
+              toolsMenuCloseTimeoutId = window.setTimeout(() => {
+                if (!isToolsMenuPinned) {
+                  closeToolsMenu();
+                }
+              }, 150);
+            }
+          });
+
+          toolsMenu.addEventListener("mouseenter", openToolsMenu);
+          toolsMenu.addEventListener("mouseleave", () => {
+            if (!isToolsMenuPinned) {
+              clearToolsMenuCloseTimeout();
+              toolsMenuCloseTimeoutId = window.setTimeout(() => {
+                if (!isToolsMenuPinned) {
+                  closeToolsMenu();
+                }
+              }, 150);
             }
           });
 

@@ -151,6 +151,16 @@ button.secondary {
   gap: 3px;
 }
 
+/* Hover bridge to cover the 8px gap between button and dropdown */
+.tools-menu::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -10px;
+  height: 10px;
+}
+
 .tools-menu-item {
   display: block;
   padding: 9px 11px;
