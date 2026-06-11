@@ -128,7 +128,7 @@ const BOSS_DATA = [
   {
     id: "pinkbean",
     name: "핑크빈",
-    icon: "pinkbean.webp",
+    icon: "pinkbean.png",
     forceType: null,
     difficulties: [
       { id: "normal", label: "노멀", price: 2500000 },
@@ -138,7 +138,7 @@ const BOSS_DATA = [
   {
     id: "cygnus",
     name: "시그너스",
-    icon: "cygnus.webp",
+    icon: "cygnus.png",
     forceType: null,
     difficulties: [
       { id: "easy", label: "이지", price: 3000000 },
@@ -148,7 +148,7 @@ const BOSS_DATA = [
   {
     id: "lotus",
     name: "스우",
-    icon: "lotus.webp",
+    icon: "swoo.webp",
     forceType: null,
     difficulties: [
       { id: "normal", label: "노멀", price: 30000000 },
@@ -159,7 +159,7 @@ const BOSS_DATA = [
   {
     id: "demian",
     name: "데미안",
-    icon: "demian.webp",
+    icon: "damien.webp",
     forceType: null,
     difficulties: [
       { id: "normal", label: "노멀", price: 30000000 },
@@ -169,7 +169,7 @@ const BOSS_DATA = [
   {
     id: "guardian_angel_slime",
     name: "가디언 엔젤 슬라임",
-    icon: "slime.webp",
+    icon: "guardianslime.png",
     forceType: null,
     difficulties: [
       { id: "normal", label: "노멀", price: 45000000 },
@@ -211,7 +211,7 @@ const BOSS_DATA = [
   {
     id: "jinhilla",
     name: "진 힐라",
-    icon: "jinhilla.webp",
+    icon: "versushilla.webp",
     forceType: "arcane",
     difficulties: [
       { id: "normal", label: "노멀", price: 70000000 },
@@ -221,7 +221,7 @@ const BOSS_DATA = [
   {
     id: "dunkel",
     name: "듄켈",
-    icon: "dunkel.webp",
+    icon: "dunkel.png",
     forceType: "arcane",
     difficulties: [
       { id: "normal", label: "노멀", price: 75000000 },
@@ -231,7 +231,7 @@ const BOSS_DATA = [
   {
     id: "black_mage",
     name: "검은 마법사",
-    icon: "black_mage.webp",
+    icon: "blackmage.webp",
     forceType: "arcane",
     difficulties: [
       { id: "hard", label: "하드", price: 500000000 },
@@ -241,7 +241,7 @@ const BOSS_DATA = [
   {
     id: "seren",
     name: "선택받은 세렌",
-    icon: "seren.webp",
+    icon: "seren.png",
     forceType: "authentic",
     difficulties: [
       { id: "normal", label: "노멀", price: 350000000 },
@@ -252,7 +252,7 @@ const BOSS_DATA = [
   {
     id: "kalos",
     name: "감시자 칼로스",
-    icon: "kalos.webp",
+    icon: "kalos.png",
     forceType: "authentic",
     difficulties: [
       { id: "easy", label: "이지", price: 300000000 },
@@ -264,7 +264,7 @@ const BOSS_DATA = [
   {
     id: "first_adversary",
     name: "최초의 대적자",
-    icon: "first_adversary.webp",
+    icon: "firstadversary.webp",
     forceType: "authentic",
     difficulties: [
       { id: "easy", label: "이지", price: 320000000 },
@@ -288,7 +288,7 @@ const BOSS_DATA = [
   {
     id: "radiant_malefic_star",
     name: "찬란한 흉성",
-    icon: "radiant_malefic_star.webp",
+    icon: "radiantmaleficstar.png",
     forceType: "authentic",
     difficulties: [
       { id: "normal", label: "노멀", price: 600000000 },
@@ -298,7 +298,7 @@ const BOSS_DATA = [
   {
     id: "limbo",
     name: "림보",
-    icon: "limbo.webp",
+    icon: "limbo.png",
     forceType: "authentic",
     difficulties: [
       { id: "normal", label: "노멀", price: 700000000 },
@@ -308,7 +308,7 @@ const BOSS_DATA = [
   {
     id: "baldrix",
     name: "발드릭스",
-    icon: "baldrix.webp",
+    icon: "baldrix.png",
     forceType: "authentic",
     difficulties: [
       { id: "normal", label: "노멀", price: 800000000 },
@@ -318,7 +318,7 @@ const BOSS_DATA = [
   {
     id: "jupiter",
     name: "유피테르",
-    icon: "jupiter.webp",
+    icon: "jupiter.png",
     forceType: "authentic",
     difficulties: [
       { id: "normal", label: "노멀", price: 900000000 },

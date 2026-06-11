@@ -4,6 +4,39 @@ document.addEventListener("DOMContentLoaded", () => {
   const STORAGE_KEY = "maple_tools_boss_income_characters_v1";
   const ACTIVE_CHARACTER_KEY = "maple_tools_boss_income_active_character_v1";
 
+  function getBossIconCandidates(iconFileName) {
+    if (!iconFileName) return [];
+
+    const candidates = [iconFileName];
+
+    if (iconFileName.endsWith(".webp")) {
+      candidates.push(iconFileName.replace(/\.webp$/i, ".png"));
+    } else if (iconFileName.endsWith(".png")) {
+      candidates.push(iconFileName.replace(/\.png$/i, ".webp"));
+    }
+
+    return candidates.map((fileName) => `${BOSS_ICON_BASE}${fileName}`);
+  }
+
+  function attachBossIconFallback(img, iconFileName) {
+    const candidates = getBossIconCandidates(iconFileName);
+    let index = 0;
+
+    img.src = candidates[index] || "";
+    img.onerror = () => {
+      index += 1;
+
+      if (index < candidates.length) {
+        img.src = candidates[index];
+        return;
+      }
+
+      img.onerror = null;
+      img.removeAttribute("src");
+      img.classList.add("is-missing");
+    };
+  }
+
   // State
   let characters = []; // Array of character objects
   let activeCharacterId = null;
@@ -221,9 +254,6 @@ document.addEventListener("DOMContentLoaded", () => {
         badgeHtml = `<span class="boss-force-label boss-force-label--authentic">어센틱</span>`;
       }
 
-      // Icon Path
-      const iconSrc = `${BOSS_ICON_BASE}${boss.icon}`;
-
       // Difficulty buttons HTML
       let diffButtonsHtml = "";
       boss.difficulties.forEach(diff => {
@@ -257,10 +287,8 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="boss-icon-stack">
           <div class="boss-icon-wrapper">
             <img 
-              src="${iconSrc}" 
               alt="${boss.name}" 
               class="boss-icon" 
-              onerror="this.classList.add('is-missing'); this.removeAttribute('src');" 
             />
           </div>
           ${badgeHtml}
@@ -270,6 +298,9 @@ document.addEventListener("DOMContentLoaded", () => {
           ${diffButtonsHtml}
         </div>
       `;
+
+      const img = bossRow.querySelector(".boss-icon");
+      attachBossIconFallback(img, boss.icon);
 
       bossListContainer.appendChild(bossRow);
     });
@@ -362,15 +393,12 @@ document.addEventListener("DOMContentLoaded", () => {
           const diff = boss.difficulties.find(d => d.id === diffId);
           if (diff) {
             activeCharMeso += diff.price;
-            const iconSrc = `${BOSS_ICON_BASE}${boss.icon}`;
             activeBossItemsHtml += `
-              <li class="selected-boss-item selected-boss-row">
+              <li class="selected-boss-item selected-boss-row" data-boss-icon="${boss.icon}">
                 <div class="selected-boss-icon-wrapper">
                   <img 
-                    src="${iconSrc}" 
                     alt="${boss.name}" 
                     class="selected-boss-icon" 
-                    onerror="this.classList.add('is-missing'); this.removeAttribute('src');" 
                   />
                 </div>
                 <span class="selected-boss-name">${boss.name} (${diff.label})</span>
@@ -384,6 +412,13 @@ document.addEventListener("DOMContentLoaded", () => {
       if (selectedBossListEl) {
         if (activeBossItemsHtml) {
           selectedBossListEl.innerHTML = activeBossItemsHtml;
+          selectedBossListEl.querySelectorAll(".selected-boss-item").forEach(item => {
+            const iconFileName = item.dataset.bossIcon;
+            const img = item.querySelector(".selected-boss-icon");
+            if (img && iconFileName) {
+              attachBossIconFallback(img, iconFileName);
+            }
+          });
         } else {
           selectedBossListEl.innerHTML = `<p class="no-bosses-selected">선택한 보스가 없습니다.</p>`;
         }
