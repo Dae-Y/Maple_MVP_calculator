@@ -1,0 +1,284 @@
+{
+  "updatedAt": "2026-06-11",
+  "currency": "meso",
+  "prices": {
+    "zaqqum": {
+      "easy": 114000,
+      "normal": 349000,
+      "chaos": 8080000
+    },
+    "magnus": {
+      "easy": 411000,
+      "normal": 1480000,
+      "hard": 8560000
+    },
+    "hilla": {
+      "normal": 455000,
+      "hard": 5750000
+    },
+    "kaung": {
+      "normal": 712000
+    },
+    "papulatus": {
+      "easy": 390000,
+      "normal": 1520000,
+      "chaos": 13800000
+    },
+    "vonbon": {
+      "normal": 551000,
+      "chaos": 8150000
+    },
+    "pierre": {
+      "normal": 551000,
+      "chaos": 8170000
+    },
+    "bloodyqueen": {
+      "normal": 551000,
+      "chaos": 8140000
+    },
+    "vellum": {
+      "normal": 551000,
+      "chaos": 9280000
+    },
+    "vanleon": {
+      "easy": 602000,
+      "normal": 830000,
+      "hard": 1390000
+    },
+    "horntail": {
+      "easy": 502000,
+      "normal": 576000,
+      "chaos": 770000
+    },
+    "arkarium": {
+      "easy": 656000,
+      "normal": 1430000
+    },
+    "pinkbean": {
+      "normal": 799000,
+      "chaos": 6580000
+    },
+    "cygnus": {
+      "easy": 4550000,
+      "normal": 7500000
+    },
+    "lotus": {
+      "normal": 17600000,
+      "hard": 54200000,
+      "extreme": 604000000
+    },
+    "demian": {
+      "normal": 18400000,
+      "hard": 51500000
+    },
+    "guardian_angel_slime": {
+      "normal": 26800000,
+      "chaos": 79100000
+    },
+    "lucid": {
+      "easy": 31400000,
+      "normal": 37500000,
+      "hard": 66200000
+    },
+    "will": {
+      "easy": 34000000,
+      "normal": 43300000,
+      "hard": 81200000
+    },
+    "dusk": {
+      "normal": 46300000,
+      "chaos": 73500000
+    },
+    "jinhilla": {
+      "normal": 74900000,
+      "hard": 112000000
+    },
+    "dunkel": {
+      "normal": 50000000,
+      "hard": 99400000
+    },
+    "black_mage": {
+      "hard": 700000000,
+      "extreme": 9200000000
+    },
+    "seren": {
+      "normal": 266000000,
+      "hard": 396000000,
+      "extreme": 3150000000
+    },
+    "kalos": {
+      "easy": 311000000,
+      "normal": 561000000,
+      "chaos": 1340000000,
+      "extreme": 4320000000
+    },
+    "first_adversary": {
+      "easy": 324000000,
+      "normal": 589000000,
+      "hard": 1510000000,
+      "extreme": 4960000000
+    },
+    "kaling": {
+      "easy": 419000000,
+      "normal": 714000000,
+      "hard": 1830000000,
+      "extreme": 5670000000
+    },
+    "radiant_malefic_star": {
+      "normal": 658000000,
+      "hard": 2819000000
+    },
+    "limbo": {
+      "normal": 1080000000,
+      "hard": 2510000000
+    },
+    "baldrix": {
+      "normal": 1440000000,
+      "hard": 3240000000
+    },
+    "jupiter": {
+      "normal": 1700000000,
+      "hard": 5100000000
+    }
+  },
+  "periods": {
+    "zaqqum": {
+      "easy": "daily",
+      "normal": "daily",
+      "chaos": "weekly"
+    },
+    "magnus": {
+      "easy": "daily",
+      "normal": "daily",
+      "hard": "weekly"
+    },
+    "hilla": {
+      "normal": "daily",
+      "hard": "weekly"
+    },
+    "kaung": {
+      "normal": "daily"
+    },
+    "papulatus": {
+      "easy": "daily",
+      "normal": "daily",
+      "chaos": "weekly"
+    },
+    "vonbon": {
+      "normal": "daily",
+      "chaos": "weekly"
+    },
+    "pierre": {
+      "normal": "daily",
+      "chaos": "weekly"
+    },
+    "bloodyqueen": {
+      "normal": "daily",
+      "chaos": "weekly"
+    },
+    "vellum": {
+      "normal": "daily",
+      "chaos": "weekly"
+    },
+    "vanleon": {
+      "easy": "daily",
+      "normal": "daily",
+      "hard": "daily"
+    },
+    "horntail": {
+      "easy": "daily",
+      "normal": "daily",
+      "chaos": "daily"
+    },
+    "arkarium": {
+      "easy": "daily",
+      "normal": "daily"
+    },
+    "pinkbean": {
+      "normal": "daily",
+      "chaos": "weekly"
+    },
+    "cygnus": {
+      "easy": "weekly",
+      "normal": "weekly"
+    },
+    "lotus": {
+      "normal": "weekly",
+      "hard": "weekly",
+      "extreme": "weekly"
+    },
+    "demian": {
+      "normal": "weekly",
+      "hard": "weekly"
+    },
+    "guardian_angel_slime": {
+      "normal": "weekly",
+      "chaos": "weekly"
+    },
+    "lucid": {
+      "easy": "weekly",
+      "normal": "weekly",
+      "hard": "weekly"
+    },
+    "will": {
+      "easy": "weekly",
+      "normal": "weekly",
+      "hard": "weekly"
+    },
+    "dusk": {
+      "normal": "weekly",
+      "chaos": "weekly"
+    },
+    "jinhilla": {
+      "normal": "weekly",
+      "hard": "weekly"
+    },
+    "dunkel": {
+      "normal": "weekly",
+      "hard": "weekly"
+    },
+    "black_mage": {
+      "hard": "monthly",
+      "extreme": "monthly"
+    },
+    "seren": {
+      "normal": "weekly",
+      "hard": "weekly",
+      "extreme": "weekly"
+    },
+    "kalos": {
+      "easy": "weekly",
+      "normal": "weekly",
+      "chaos": "weekly",
+      "extreme": "weekly"
+    },
+    "first_adversary": {
+      "easy": "weekly",
+      "normal": "weekly",
+      "hard": "weekly",
+      "extreme": "weekly"
+    },
+    "kaling": {
+      "easy": "weekly",
+      "normal": "weekly",
+      "hard": "weekly",
+      "extreme": "weekly"
+    },
+    "radiant_malefic_star": {
+      "normal": "weekly",
+      "hard": "weekly"
+    },
+    "limbo": {
+      "normal": "weekly",
+      "hard": "weekly"
+    },
+    "baldrix": {
+      "normal": "weekly",
+      "hard": "weekly"
+    },
+    "jupiter": {
+      "normal": "weekly",
+      "hard": "weekly"
+    }
+  }
+}

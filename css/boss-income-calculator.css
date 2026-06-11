@@ -202,7 +202,7 @@
 /* --- 3-Column Layout --- */
 .boss-income-layout {
   display: grid;
-  grid-template-columns: 270px minmax(360px, 1fr) 310px;
+  grid-template-columns: 230px minmax(520px, 1fr) 300px;
   gap: 18px;
   align-items: start;
 }
@@ -211,6 +211,7 @@
 .character-column,
 .summary-column {
   min-width: 0;
+  min-height: 0;
   padding: 20px !important;
   margin-bottom: 0 !important;
 }
@@ -325,9 +326,10 @@
 
 .character-card {
   position: relative;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px 10px;
   align-items: center;
-  gap: 12px;
   background: #f9fafb;
   border: 1px solid #e5e7eb;
   border-radius: 14px;
@@ -347,32 +349,12 @@
   box-shadow: 0 4px 12px rgba(124, 58, 237, 0.12);
 }
 
-/* Avatar placeholder box */
-.char-avatar-placeholder {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 800;
-  font-size: 15px;
-  flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.2);
-}
-
-.character-card.is-active .char-avatar-placeholder {
-  background: linear-gradient(135deg, #3b82f6 0%, #7c3aed 100%);
-}
-
 .char-info-block {
-  flex-grow: 1;
+  grid-column: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 6px;
 }
 
 .char-header-line {
@@ -382,8 +364,8 @@
 }
 
 .char-name {
-  font-size: 14.5px;
-  font-weight: 800;
+  font-size: 15.5px;
+  font-weight: 900;
   color: #1f2937;
   white-space: nowrap;
   overflow: hidden;
@@ -391,26 +373,28 @@
 }
 
 .char-job {
-  font-size: 12px;
+  font-size: 12.5px;
   color: #6b7280;
   font-weight: 700;
 }
 
 .char-stats-line {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 11.5px;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+  font-size: 13px;
   color: #4b5563;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .char-crystal-badge {
   background: #ede9fe;
   color: #6d28d9;
-  padding: 1px 6px;
+  padding: 2px 8px;
   border-radius: 6px;
-  font-size: 11px;
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 .character-card.is-active .char-crystal-badge {
@@ -419,7 +403,10 @@
 
 .char-income {
   color: #4f46e5;
-  font-size: 11.5px;
+  font-size: 13.5px;
+  white-space: nowrap;
+  text-align: left;
+  font-weight: 900;
 }
 
 /* Delete button on character card */
@@ -437,6 +424,8 @@
   border-radius: 8px;
   transition: all 0.2s ease;
   flex-shrink: 0;
+  position: relative;
+  top: -3px;
 }
 
 .btn-delete-char:hover {
@@ -474,9 +463,13 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 600px;
+  min-height: 0;
+  max-height: calc(100vh - 300px);
   overflow-y: auto;
-  padding-right: 4px;
+  overflow-x: hidden;
+  padding-right: 6px;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .boss-list::-webkit-scrollbar {
@@ -496,20 +489,31 @@
 /* Compact Boss Row Styling */
 .boss-row {
   display: grid;
-  grid-template-columns: 46px minmax(70px, 1fr) minmax(190px, auto);
+  grid-template-columns: 48px minmax(72px, 1fr) 248px;
   gap: 10px;
   align-items: center;
   background: #f9fafb;
   border-radius: 12px;
   padding: 7px 9px;
   border: 1px solid rgba(229, 231, 235, 0.5);
-  transition: border-color 0.2s ease, background-color 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
 }
 
 .boss-row:hover {
   background: white;
-  border-color: rgba(99, 102, 241, 0.25);
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02);
+  border-color: rgba(99, 102, 241, 0.35);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+}
+
+.boss-row.is-selected {
+  border-color: rgba(124, 58, 237, 0.5);
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.12), rgba(99, 102, 241, 0.08));
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.08);
+}
+
+.boss-row.is-selected .boss-name {
+  color: #4f46e5;
 }
 
 .boss-icon-stack {
@@ -581,72 +585,85 @@
   border: 1px solid rgba(185, 28, 28, 0.15);
 }
 
-/* Compact Difficulty Buttons */
-.boss-difficulty-list {
+/* Compact Stepper Controls */
+.boss-controls {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  justify-content: flex-end;
   align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
 }
 
-.boss-difficulty-button {
-  background: #ffffff;
+.boss-stepper {
+  display: flex;
+  align-items: center;
+  background: white;
   border: 1px solid #e5e7eb;
-  color: #4b5563;
   border-radius: 8px;
-  padding: 5px 7px;
-  font-size: 11px;
-  font-weight: 700;
-  display: inline-flex;
+  overflow: hidden;
+  height: 34px;
+  transition: border-color 0.15s ease;
+}
+
+.boss-difficulty-stepper {
+  width: 145px;
+}
+
+.boss-party-stepper {
+  width: 95px;
+}
+
+.boss-stepper-btn {
+  background: transparent;
+  border: none;
+  color: #4f46e5;
+  width: 24px;
+  height: 100%;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+  box-shadow: none;
+}
+
+.boss-stepper-btn:hover:not(:disabled) {
+  background-color: #f3f4f6;
+}
+
+.boss-stepper-btn:disabled {
+  color: #cbd5e1;
+  cursor: not-allowed;
+}
+
+.boss-stepper-val-container {
+  flex: 1;
+  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-width: 54px;
+  min-width: 0;
+  padding: 0 4px;
+  user-select: none;
   line-height: 1.15;
-  white-space: nowrap;
-  cursor: pointer;
-  box-shadow: none;
-  transition: all 0.15s ease;
-  font-family: inherit;
 }
 
-.boss-difficulty-button:hover:not(:disabled) {
-  background: #f9fafb;
-  border-color: #d1d5db;
-  transform: translateY(-0.5px);
-}
-
-.boss-difficulty-button:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-  background: #f3f4f6;
-  border-color: #e5e7eb;
-}
-
-.boss-difficulty-button .diff-label {
-  font-size: 11px;
+.boss-stepper-label {
+  font-size: 13.5px;
   font-weight: 800;
+  color: #374151;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.boss-difficulty-button .diff-price {
-  font-size: 9px;
-  color: #9ca3af;
-  font-weight: 600;
-}
-
-.boss-difficulty-button.is-selected {
-  background: #ede9fe;
-  border-color: rgba(124, 58, 237, 0.45);
-  color: #6d28d9;
-}
-
-.boss-difficulty-button.is-selected .diff-price {
-  color: #7c3aed;
-}
-
-.boss-difficulty-button.is-selected:hover:not(:disabled) {
-  background: #ddd6fe;
+.boss-stepper-sublabel {
+  font-size: 11px;
+  color: #111827;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 /* --- Right Column: Summary for selected character --- */
@@ -886,7 +903,9 @@
   }
   
   .boss-list {
-    max-height: 400px;
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
   }
 }
 
@@ -918,20 +937,201 @@
     grid-template-columns: 46px 1fr;
   }
   
-  .boss-difficulty-list {
+  .boss-controls {
     grid-column: 1 / -1;
     justify-content: flex-start;
     margin-top: 4px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 6px;
   }
   
-  .boss-difficulty-button {
-    flex: 1 1 calc(33.33% - 4px);
-    min-width: 65px;
+  .boss-stepper {
+    min-width: 0;
+    width: 100%;
   }
 }
 
 @media (max-width: 480px) {
-  .boss-difficulty-button {
-    flex: 1 1 calc(50% - 4px);
+  .boss-controls {
+    grid-template-columns: 1.4fr 1fr;
   }
+}
+
+/* Collapsible Boss Period Sections */
+.boss-period-section {
+  border: 1px solid rgba(229, 231, 235, 0.6);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+  margin-bottom: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  flex-shrink: 0;
+}
+
+.boss-period-section:hover {
+  border-color: rgba(99, 102, 241, 0.2);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+}
+
+.boss-period-header {
+  width: 100%;
+  border: 0;
+  background: #f8fafc;
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #374151;
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.2s;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  transform: none !important;
+  margin: 0 !important;
+}
+
+.boss-period-header:hover {
+  background: #f1f5f9;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.boss-period-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.boss-period-title {
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.boss-period-meta {
+  font-size: 11px;
+  font-weight: 700;
+  color: #4f46e5;
+  background: #eef2ff;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.boss-period-toggle {
+  font-size: 14px;
+  font-weight: bold;
+  color: #64748b;
+  transition: transform 0.2s;
+}
+
+.boss-period-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  background: #ffffff;
+}
+
+.boss-period-section.is-collapsed .boss-period-body {
+  display: none;
+}
+
+.boss-period-section.is-collapsed .boss-period-header {
+  border-bottom: none;
+}
+
+/* Daily Boss Reference Styling */
+.boss-period-note {
+  margin: 8px 8px 6px;
+  padding: 9px 10px;
+  border-radius: 12px;
+  background: rgba(239, 246, 255, 0.9);
+  color: #475569;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  border: 1px solid rgba(96, 165, 250, 0.18);
+}
+
+.daily-boss-reference-row {
+  display: grid;
+  grid-template-columns: 42px minmax(80px, 1fr);
+  gap: 8px;
+  align-items: center;
+  padding: 7px 9px;
+  border-radius: 12px;
+  background: rgba(248, 250, 252, 0.9);
+  border: 1px solid rgba(229, 231, 235, 0.4);
+}
+
+.daily-boss-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.daily-boss-prices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.daily-boss-price-chip {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  color: #4b5563;
+}
+
+.selected-boss-info-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.selected-boss-date {
+  font-size: 10.5px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.storage-notice {
+  font-size: 12px;
+  color: #111827;
+  text-align: center;
+  margin-top: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.summary-week-label {
+  color: #6d28d9;
+  margin-right: 4px;
+}
+
+.monthly-completion-status {
+  margin-top: -4px;
+  margin-bottom: 2px;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: #6b7280;
+  font-weight: 800;
+  text-align: right;
+}
+
+.monthly-completion-status.is-complete {
+  color: #4f46e5;
+}
+
+.monthly-completion-status.is-empty {
+  color: #9ca3af;
 }

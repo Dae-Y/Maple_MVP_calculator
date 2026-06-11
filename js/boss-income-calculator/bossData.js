@@ -7,9 +7,9 @@ const BOSS_DATA = [
     icon: "zaqqum.webp",
     forceType: null,
     difficulties: [
-      { id: "easy", label: "이지", price: 1000000 },
-      { id: "normal", label: "노멀", price: 2000000 },
-      { id: "chaos", label: "카오스", price: 10000000 }
+      { id: "easy", label: "이지" },
+      { id: "normal", label: "노멀" },
+      { id: "chaos", label: "카오스" }
     ]
   },
   {
@@ -18,9 +18,9 @@ const BOSS_DATA = [
     icon: "magnus.png",
     forceType: null,
     difficulties: [
-      { id: "easy", label: "이지", price: 1200000 },
-      { id: "normal", label: "노멀", price: 3000000 },
-      { id: "hard", label: "하드", price: 15000000 }
+      { id: "easy", label: "이지" },
+      { id: "normal", label: "노멀" },
+      { id: "hard", label: "하드" }
     ]
   },
   {
@@ -29,8 +29,8 @@ const BOSS_DATA = [
     icon: "hilla.png",
     forceType: null,
     difficulties: [
-      { id: "normal", label: "노멀", price: 1500000 },
-      { id: "hard", label: "하드", price: 12000000 }
+      { id: "normal", label: "노멀" },
+      { id: "hard", label: "하드" }
     ]
   },
   {
@@ -39,7 +39,7 @@ const BOSS_DATA = [
     icon: "kaung.png",
     forceType: null,
     difficulties: [
-      { id: "normal", label: "노멀", price: 2000000 }
+      { id: "normal", label: "노멀" }
     ]
   },
   {
@@ -48,9 +48,9 @@ const BOSS_DATA = [
     icon: "papulatus.webp",
     forceType: null,
     difficulties: [
-      { id: "easy", label: "이지", price: 1500000 },
-      { id: "normal", label: "노멀", price: 4000000 },
-      { id: "chaos", label: "카오스", price: 25000000 }
+      { id: "easy", label: "이지" },
+      { id: "normal", label: "노멀" },
+      { id: "chaos", label: "카오스" }
     ]
   },
   {
@@ -59,8 +59,8 @@ const BOSS_DATA = [
     icon: "vonbon.png",
     forceType: null,
     difficulties: [
-      { id: "normal", label: "노멀", price: 1500000 },
-      { id: "chaos", label: "카오스", price: 15000000 }
+      { id: "normal", label: "노멀" },
+      { id: "chaos", label: "카오스" }
     ]
   },
   {
@@ -69,8 +69,8 @@ const BOSS_DATA = [
     icon: "pierre.png",
     forceType: null,
     difficulties: [
-      { id: "normal", label: "노멀", price: 1500000 },
-      { id: "chaos", label: "카오스", price: 15000000 }
+      { id: "normal", label: "노멀" },
+      { id: "chaos", label: "카오스" }
     ]
   },
   {
@@ -79,8 +79,8 @@ const BOSS_DATA = [
     icon: "bloodyqueen.webp",
     forceType: null,
     difficulties: [
-      { id: "normal", label: "노멀", price: 1500000 },
-      { id: "chaos", label: "카오스", price: 15000000 }
+      { id: "normal", label: "노멀" },
+      { id: "chaos", label: "카오스" }
     ]
   },
   {
@@ -89,8 +89,8 @@ const BOSS_DATA = [
     icon: "vellum.webp",
     forceType: null,
     difficulties: [
-      { id: "normal", label: "노멀", price: 2000000 },
-      { id: "chaos", label: "카오스", price: 20000000 }
+      { id: "normal", label: "노멀" },
+      { id: "chaos", label: "카오스" }
     ]
   },
   {
@@ -99,9 +99,9 @@ const BOSS_DATA = [
     icon: "vanleon.webp",
     forceType: null,
     difficulties: [
-      { id: "easy", label: "이지", price: 1000000 },
-      { id: "normal", label: "노멀", price: 2000000 },
-      { id: "hard", label: "하드", price: 8000000 }
+      { id: "easy", label: "이지" },
+      { id: "normal", label: "노멀" },
+      { id: "hard", label: "하드" }
     ]
   },
   {
@@ -110,9 +110,9 @@ const BOSS_DATA = [
     icon: "horntail.webp",
     forceType: null,
     difficulties: [
-      { id: "easy", label: "이지", price: 1000000 },
-      { id: "normal", label: "노멀", price: 2000000 },
-      { id: "chaos", label: "카오스", price: 5000000 }
+      { id: "easy", label: "이지" },
+      { id: "normal", label: "노멀" },
+      { id: "chaos", label: "카오스" }
     ]
   },
   {
@@ -121,8 +121,8 @@ const BOSS_DATA = [
     icon: "arkarium.webp",
     forceType: null,
     difficulties: [
-      { id: "easy", label: "이지", price: 1200000 },
-      { id: "normal", label: "노멀", price: 3000000 }
+      { id: "easy", label: "이지" },
+      { id: "normal", label: "노멀" }
     ]
   },
   {
@@ -131,8 +131,8 @@ const BOSS_DATA = [
     icon: "pinkbean.png",
     forceType: null,
     difficulties: [
-      { id: "normal", label: "노멀", price: 2500000 },
-      { id: "chaos", label: "카오스", price: 16000000 }
+      { id: "normal", label: "노멀" },
+      { id: "chaos", label: "카오스" }
     ]
   },
   {
@@ -141,8 +141,8 @@ const BOSS_DATA = [
     icon: "cygnus.png",
     forceType: null,
     difficulties: [
-      { id: "easy", label: "이지", price: 3000000 },
-      { id: "normal", label: "노멀", price: 18000000 }
+      { id: "easy", label: "이지" },
+      { id: "normal", label: "노멀" }
     ]
   },
   {
@@ -151,9 +151,9 @@ const BOSS_DATA = [
     icon: "swoo.webp",
     forceType: null,
     difficulties: [
-      { id: "normal", label: "노멀", price: 30000000 },
-      { id: "hard", label: "하드", price: 120000000 },
-      { id: "extreme", label: "익스트림", price: 400000000 }
+      { id: "normal", label: "노멀" },
+      { id: "hard", label: "하드" },
+      { id: "extreme", label: "익스트림" }
     ]
   },
   {
@@ -162,8 +162,8 @@ const BOSS_DATA = [
     icon: "damien.webp",
     forceType: null,
     difficulties: [
-      { id: "normal", label: "노멀", price: 30000000 },
-      { id: "hard", label: "하드", price: 110000000 }
+      { id: "normal", label: "노멀" },
+      { id: "hard", label: "하드" }
     ]
   },
   {
@@ -172,8 +172,8 @@ const BOSS_DATA = [
     icon: "guardianslime.png",
     forceType: null,
     difficulties: [
-      { id: "normal", label: "노멀", price: 45000000 },
-      { id: "chaos", label: "카오스", price: 250000000 }
+      { id: "normal", label: "노멀" },
+      { id: "chaos", label: "카오스" }
     ]
   },
   {
@@ -182,9 +182,9 @@ const BOSS_DATA = [
     icon: "lucid.webp",
     forceType: "arcane",
     difficulties: [
-      { id: "easy", label: "이지", price: 35000000 },
-      { id: "normal", label: "노멀", price: 50000000 },
-      { id: "hard", label: "하드", price: 200000000 }
+      { id: "easy", label: "이지" },
+      { id: "normal", label: "노멀" },
+      { id: "hard", label: "하드" }
     ]
   },
   {
@@ -193,9 +193,9 @@ const BOSS_DATA = [
     icon: "will.webp",
     forceType: "arcane",
     difficulties: [
-      { id: "easy", label: "이지", price: 38000000 },
-      { id: "normal", label: "노멀", price: 55000000 },
-      { id: "hard", label: "하드", price: 220000000 }
+      { id: "easy", label: "이지" },
+      { id: "normal", label: "노멀" },
+      { id: "hard", label: "하드" }
     ]
   },
   {
@@ -204,8 +204,8 @@ const BOSS_DATA = [
     icon: "dusk.webp",
     forceType: "arcane",
     difficulties: [
-      { id: "normal", label: "노멀", price: 60000000 },
-      { id: "chaos", label: "카오스", price: 260000000 }
+      { id: "normal", label: "노멀" },
+      { id: "chaos", label: "카오스" }
     ]
   },
   {
@@ -214,8 +214,8 @@ const BOSS_DATA = [
     icon: "versushilla.webp",
     forceType: "arcane",
     difficulties: [
-      { id: "normal", label: "노멀", price: 70000000 },
-      { id: "hard", label: "하드", price: 300000000 }
+      { id: "normal", label: "노멀" },
+      { id: "hard", label: "하드" }
     ]
   },
   {
@@ -224,8 +224,8 @@ const BOSS_DATA = [
     icon: "dunkel.png",
     forceType: "arcane",
     difficulties: [
-      { id: "normal", label: "노멀", price: 75000000 },
-      { id: "hard", label: "하드", price: 320000000 }
+      { id: "normal", label: "노멀" },
+      { id: "hard", label: "하드" }
     ]
   },
   {
@@ -234,8 +234,8 @@ const BOSS_DATA = [
     icon: "blackmage.webp",
     forceType: "arcane",
     difficulties: [
-      { id: "hard", label: "하드", price: 500000000 },
-      { id: "extreme", label: "익스트림", price: 1500000000 }
+      { id: "hard", label: "하드" },
+      { id: "extreme", label: "익스트림" }
     ]
   },
   {
@@ -244,9 +244,9 @@ const BOSS_DATA = [
     icon: "seren.png",
     forceType: "authentic",
     difficulties: [
-      { id: "normal", label: "노멀", price: 350000000 },
-      { id: "hard", label: "하드", price: 600000000 },
-      { id: "extreme", label: "익스트림", price: 1800000000 }
+      { id: "normal", label: "노멀" },
+      { id: "hard", label: "하드" },
+      { id: "extreme", label: "익스트림" }
     ]
   },
   {
@@ -255,10 +255,10 @@ const BOSS_DATA = [
     icon: "kalos.png",
     forceType: "authentic",
     difficulties: [
-      { id: "easy", label: "이지", price: 300000000 },
-      { id: "normal", label: "노멀", price: 450000000 },
-      { id: "chaos", label: "카오스", price: 800000000 },
-      { id: "extreme", label: "익스트림", price: 2500000000 }
+      { id: "easy", label: "이지" },
+      { id: "normal", label: "노멀" },
+      { id: "chaos", label: "카오스" },
+      { id: "extreme", label: "익스트림" }
     ]
   },
   {
@@ -267,10 +267,10 @@ const BOSS_DATA = [
     icon: "firstadversary.webp",
     forceType: "authentic",
     difficulties: [
-      { id: "easy", label: "이지", price: 320000000 },
-      { id: "normal", label: "노멀", price: 480000000 },
-      { id: "hard", label: "하드", price: 900000000 },
-      { id: "extreme", label: "익스트림", price: 2800000000 }
+      { id: "easy", label: "이지" },
+      { id: "normal", label: "노멀" },
+      { id: "hard", label: "하드" },
+      { id: "extreme", label: "익스트림" }
     ]
   },
   {
@@ -279,10 +279,10 @@ const BOSS_DATA = [
     icon: "kaling.webp",
     forceType: "authentic",
     difficulties: [
-      { id: "easy", label: "이지", price: 350000000 },
-      { id: "normal", label: "노멀", price: 520000000 },
-      { id: "hard", label: "하드", price: 1000000000 },
-      { id: "extreme", label: "익스트림", price: 3000000000 }
+      { id: "easy", label: "이지" },
+      { id: "normal", label: "노멀" },
+      { id: "hard", label: "하드" },
+      { id: "extreme", label: "익스트림" }
     ]
   },
   {
@@ -291,8 +291,8 @@ const BOSS_DATA = [
     icon: "radiantmaleficstar.png",
     forceType: "authentic",
     difficulties: [
-      { id: "normal", label: "노멀", price: 600000000 },
-      { id: "hard", label: "하드", price: 1200000000 }
+      { id: "normal", label: "노멀" },
+      { id: "hard", label: "하드" }
     ]
   },
   {
@@ -301,8 +301,8 @@ const BOSS_DATA = [
     icon: "limbo.png",
     forceType: "authentic",
     difficulties: [
-      { id: "normal", label: "노멀", price: 700000000 },
-      { id: "hard", label: "하드", price: 1500000000 }
+      { id: "normal", label: "노멀" },
+      { id: "hard", label: "하드" }
     ]
   },
   {
@@ -311,8 +311,8 @@ const BOSS_DATA = [
     icon: "baldrix.png",
     forceType: "authentic",
     difficulties: [
-      { id: "normal", label: "노멀", price: 800000000 },
-      { id: "hard", label: "하드", price: 1800000000 }
+      { id: "normal", label: "노멀" },
+      { id: "hard", label: "하드" }
     ]
   },
   {
@@ -321,8 +321,8 @@ const BOSS_DATA = [
     icon: "jupiter.png",
     forceType: "authentic",
     difficulties: [
-      { id: "normal", label: "노멀", price: 900000000 },
-      { id: "hard", label: "하드", price: 2000000000 }
+      { id: "normal", label: "노멀" },
+      { id: "hard", label: "하드" }
     ]
   }
 ];

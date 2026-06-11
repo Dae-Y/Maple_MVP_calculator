@@ -99,14 +99,9 @@
           
           <!-- Character Form -->
           <form id="addCharForm" class="add-char-form" onsubmit="event.preventDefault();">
-            <div class="input-row">
-              <input type="text" id="charNameInput" placeholder="캐릭터명" required maxlength="12" />
-              <input type="text" id="charJobInput" placeholder="직업" maxlength="15" />
-            </div>
-            <div class="character-form-actions">
-              <button id="addCharacterButton" type="button" class="btn-add-char">추가</button>
-              <button id="saveCharacterButton" type="button" class="btn-save-char">저장</button>
-            </div>
+            <input type="text" id="charNameInput" placeholder="캐릭터명" required maxlength="12" />
+            <input type="text" id="charJobInput" placeholder="직업" maxlength="15" />
+            <button id="addCharacterButton" type="button" class="btn-add-char">추가</button>
           </form>
 
           <!-- Character Card List -->
@@ -128,7 +123,7 @@
 
         <!-- Right Column: Summary for selected character / weekly limit -->
         <section class="card summary-column">
-          <h2>선택 현황</h2>
+          <h2 class="summary-title"><span id="summaryWeekLabel" class="summary-week-label">6월 2주차</span> 선택 현황</h2>
           
           <div class="selected-char-info" id="selectedCharInfo">
             <p class="no-char-selected-msg">선택된 캐릭터가 없습니다. 캐릭터를 추가하고 선택하세요.</p>
@@ -136,8 +131,15 @@
 
           <div class="summary-details">
             <div class="summary-row">
-              <span>캐릭터 결정석</span>
+              <span>캐릭터 주간 보스</span>
               <strong id="charCrystalCount">0 / 12</strong>
+            </div>
+            <div class="summary-row">
+              <span>캐릭터 월간 보스</span>
+              <strong id="charMonthlyCount">0 / 1</strong>
+            </div>
+            <div id="monthlyCompletionStatus" class="monthly-completion-status">
+              이번 달 검은 마법사: 미완료
             </div>
             <div class="summary-row">
               <span>캐릭터 예상 수익</span>
@@ -172,7 +174,11 @@
 
           <div class="summary-actions">
             <button id="resetCharBtn" class="secondary" type="button">선택 캐릭터 초기화</button>
-            <button id="resetAllBtn" class="danger-btn" type="button">전체 초기화</button>
+            <button id="saveCharacterButton" class="btn-save-char" type="button">저장</button>
+          </div>
+          <div class="storage-notice">
+            기록은 현재 브라우저에 저장됩니다.<br />
+            사이트 데이터 캐시를 삭제하면 기록이 사라질 수 있습니다.
           </div>
         </section>
 

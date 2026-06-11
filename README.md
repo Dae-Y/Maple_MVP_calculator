@@ -133,10 +133,12 @@ maple_tools/
 │   ├── styles.css          # legacy fallback/importer
 │   └── README.md
 ├── data/
-│   └── cube-simulator/
-│       ├── acprobs.json
-│       ├── bcprobs.json
-│       └── wcprobs.json
+│   ├── cube-simulator/
+│   │   ├── acprobs.json
+│   │   ├── bcprobs.json
+│   │   └── wcprobs.json
+│   └── boss-income-calculator/
+│       └── crystal-prices.json
 ├── js/
 │   ├── mvp-calculator/
 │   │   ├── app.js
