@@ -1,5 +1,6 @@
 {
-  "updatedAt": "2026-06-11",
+  "updatedAt": "2026-06-13",
+  "sourceLabel": "KMST 1.2.202 boss crystal price update",
   "currency": "meso",
   "prices": {
     "zaqqum": {
@@ -9,20 +10,20 @@
     },
     "magnus": {
       "easy": 411000,
-      "normal": 1480000,
+      "normal": 1160000,
       "hard": 8560000
     },
     "hilla": {
       "normal": 455000,
-      "hard": 5750000
+      "hard": 1280000
     },
     "kaung": {
       "normal": 712000
     },
     "papulatus": {
       "easy": 390000,
-      "normal": 1520000,
-      "chaos": 13800000
+      "normal": 1200000,
+      "chaos": 13100000
     },
     "vonbon": {
       "normal": 551000,
@@ -43,7 +44,7 @@
     "vanleon": {
       "easy": 602000,
       "normal": 830000,
-      "hard": 1390000
+      "hard": 1070000
     },
     "horntail": {
       "easy": 502000,
@@ -52,93 +53,93 @@
     },
     "arkarium": {
       "easy": 656000,
-      "normal": 1430000
+      "normal": 1110000
     },
     "pinkbean": {
       "normal": 799000,
-      "chaos": 6580000
+      "chaos": 1320000
     },
     "cygnus": {
       "easy": 4550000,
-      "normal": 7500000
+      "normal": 1360000
     },
     "lotus": {
-      "normal": 17600000,
-      "hard": 54200000,
-      "extreme": 604000000
+      "normal": 16700000,
+      "hard": 51500000,
+      "extreme": 574000000
     },
     "demian": {
-      "normal": 18400000,
-      "hard": 51500000
+      "normal": 17500000,
+      "hard": 48900000
     },
     "guardian_angel_slime": {
-      "normal": 26800000,
-      "chaos": 79100000
+      "normal": 25500000,
+      "chaos": 75100000
     },
     "lucid": {
-      "easy": 31400000,
-      "normal": 37500000,
-      "hard": 66200000
+      "easy": 29800000,
+      "normal": 35600000,
+      "hard": 62900000
     },
     "will": {
-      "easy": 34000000,
-      "normal": 43300000,
-      "hard": 81200000
+      "easy": 32300000,
+      "normal": 41100000,
+      "hard": 77100000
     },
     "dusk": {
-      "normal": 46300000,
-      "chaos": 73500000
+      "normal": 44000000,
+      "chaos": 69800000
     },
     "jinhilla": {
-      "normal": 74900000,
-      "hard": 112000000
+      "normal": 71200000,
+      "hard": 106000000
     },
     "dunkel": {
-      "normal": 50000000,
-      "hard": 99400000
+      "normal": 47500000,
+      "hard": 94400000
     },
     "black_mage": {
-      "hard": 700000000,
-      "extreme": 9200000000
+      "hard": 665000000,
+      "extreme": 8740000000
     },
     "seren": {
-      "normal": 266000000,
-      "hard": 396000000,
-      "extreme": 3150000000
+      "normal": 239000000,
+      "hard": 356000000,
+      "extreme": 2835000000
     },
     "kalos": {
-      "easy": 311000000,
-      "normal": 561000000,
-      "chaos": 1340000000,
-      "extreme": 4320000000
+      "easy": 280000000,
+      "normal": 505000000,
+      "chaos": 1273000000,
+      "extreme": 4104000000
     },
     "first_adversary": {
-      "easy": 324000000,
-      "normal": 589000000,
-      "hard": 1510000000,
-      "extreme": 4960000000
+      "easy": 308000000,
+      "normal": 560000000,
+      "hard": 1435000000,
+      "extreme": 4712000000
     },
     "kaling": {
-      "easy": 419000000,
-      "normal": 714000000,
-      "hard": 1830000000,
-      "extreme": 5670000000
+      "easy": 377000000,
+      "normal": 678000000,
+      "hard": 1739000000,
+      "extreme": 5387000000
     },
     "radiant_malefic_star": {
-      "normal": 658000000,
-      "hard": 2819000000
+      "normal": 625000000,
+      "hard": 2678000000
     },
     "limbo": {
-      "normal": 1080000000,
-      "hard": 2510000000
+      "normal": 1026000000,
+      "hard": 2385000000
     },
     "baldrix": {
-      "normal": 1440000000,
-      "hard": 3240000000
+      "normal": 1368000000,
+      "hard": 3078000000
     },
     "jupiter": {
-      "normal": 1700000000,
-      "hard": 5100000000
+      "normal": 1615000000,
+      "hard": 4845000000
     },
     "kai": {
       "normal": 0,
