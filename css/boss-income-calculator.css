@@ -586,7 +586,7 @@
   flex-direction: column;
   gap: 8px;
   min-height: 0;
-  max-height: calc(100vh - 300px);
+  height: clamp(600px, 72dvh, 820px);
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 6px;
@@ -1025,6 +1025,7 @@
   }
   
   .boss-list {
+    height: auto;
     max-height: none;
     overflow: visible;
     padding-right: 0;
