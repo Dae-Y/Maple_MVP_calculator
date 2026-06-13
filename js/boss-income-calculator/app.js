@@ -1476,7 +1476,7 @@ document.addEventListener("DOMContentLoaded", () => {
       crystalCountEl.textContent = totalCrystalsAll;
     }
     if (totalMesoEl) {
-      totalMesoEl.textContent = totalMesoAll.toLocaleString();
+      totalMesoEl.textContent = formatMesoKorean(totalMesoAll).replace(" 메소", "");
     }
 
     // Update meter bar width (percentage up to 100%)
