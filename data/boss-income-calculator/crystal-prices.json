@@ -144,6 +144,9 @@
     "kai": {
       "normal": 0,
       "hard": 0
+    },
+    "meilin": {
+      "normal": 0
     }
   },
   "periods": {
@@ -288,6 +291,9 @@
     "kai": {
       "normal": "seasonal",
       "hard": "seasonal"
+    },
+    "meilin": {
+      "normal": "seasonal"
     }
   }
 }

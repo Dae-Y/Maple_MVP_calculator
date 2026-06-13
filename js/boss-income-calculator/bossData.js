@@ -335,5 +335,15 @@ const BOSS_DATA = [
       { id: "hard", label: "하드" }
     ],
     seasonal: true
+  },
+  {
+    id: "meilin",
+    name: "메이린",
+    icon: "meilin.png",
+    forceType: null,
+    difficulties: [
+      { id: "normal", label: "노멀" }
+    ],
+    seasonal: true
   }
 ];
