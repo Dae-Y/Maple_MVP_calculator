@@ -92,11 +92,11 @@
 
       <!-- 3-Column Layout Container -->
       <div class="boss-income-layout">
-        
+
         <!-- Left Column: Character management -->
         <section class="card character-column">
           <h2>캐릭터</h2>
-          
+
           <!-- Character Form -->
           <form id="addCharForm" class="add-char-form" onsubmit="event.preventDefault();">
             <input type="text" id="charNameInput" placeholder="캐릭터명" required maxlength="12" />
@@ -113,7 +113,27 @@
         <!-- Middle Column: Boss Selection -->
         <section class="card boss-column">
           <div class="boss-board-header">
-            <h2>보스 목록</h2>
+            <div class="boss-board-header-left">
+              <h2>보스 목록</h2>
+              <div class="boss-list-toolbar">
+                <button id="bossOrderDefaultButton" class="boss-order-button is-active" type="button" title="기본순"
+                  aria-label="기본순">▲</button>
+                <button id="bossOrderReverseButton" class="boss-order-button" type="button" title="역순"
+                  aria-label="역순">▼</button>
+                <div class="boss-filter-container">
+                  <button id="bossFilterButton" class="boss-filter-button" type="button" aria-haspopup="true"
+                    aria-expanded="false">주보필터</button>
+                  <div id="bossFilterDropdown" class="boss-filter-dropdown">
+                    <label class="boss-filter-option">
+                      <input type="checkbox" id="hideBelowLotusDamienCheckbox" />
+                      <span>노스데 이하 숨기기</span>
+                    </label>
+                  </div>
+                </div>
+                <span id="bossFilterIndicator" class="boss-filter-indicator" style="display: none;">노스데 이하 숨김 적용
+                  중</span>
+              </div>
+            </div>
             <span class="active-char-badge" id="activeCharBadge">선택된 캐릭터 없음</span>
           </div>
           <div id="bossList" class="boss-list">
@@ -124,7 +144,7 @@
         <!-- Right Column: Summary for selected character / weekly limit -->
         <section class="card summary-column">
           <h2 class="summary-title"><span id="summaryWeekLabel" class="summary-week-label">6월 2주차</span> 선택 현황</h2>
-          
+
           <div class="selected-char-info" id="selectedCharInfo">
             <p class="no-char-selected-msg">선택된 캐릭터가 없습니다. 캐릭터를 추가하고 선택하세요.</p>
           </div>
@@ -140,6 +160,13 @@
             </div>
             <div id="monthlyCompletionStatus" class="monthly-completion-status">
               이번 달 검은 마법사: 미완료
+            </div>
+            <div class="summary-row">
+              <span>캐릭터 시즌 보스</span>
+              <strong id="charSeasonalCount">0개</strong>
+            </div>
+            <div id="seasonalCompletionStatus" class="seasonal-completion-status">
+              이번 시즌 카이: 미완료
             </div>
             <div class="summary-row">
               <span>캐릭터 예상 수익</span>
@@ -197,7 +224,8 @@
       <hr class="footer-divider" />
 
       <div class="footer-notices-en">
-        <p>※ Boss crystal prices and weekly limits may change with game updates. Calculation results are for reference only.</p>
+        <p>※ Boss crystal prices and weekly limits may change with game updates. Calculation results are for reference
+          only.</p>
         <p>※ This is a fan-made tools hub and is not officially supported or operated by Nexon.</p>
         <p>※ All rights to MapleStory and related icons/images belong to Nexon.</p>
       </div>
@@ -225,7 +253,7 @@
       const toolsNav = document.querySelector(".tools-nav");
       const toolsMenuButton = document.querySelector(".tools-menu-button");
       const toolsMenu = document.querySelector(".tools-menu");
- 
+
       if (toolsNav && toolsMenuButton && toolsMenu) {
         let isToolsMenuPinned = false;
         let toolsMenuCloseTimeoutId = null;
@@ -306,13 +334,13 @@
 
         // Click handler (mobile tap & desktop click behavior)
         toolsMenuButton.addEventListener("click", handleButtonClick);
- 
+
         document.addEventListener("click", (event) => {
           if (!toolsNav.contains(event.target)) {
             closeToolsMenu();
           }
         });
- 
+
         document.addEventListener("keydown", (event) => {
           if (event.key === "Escape") {
             closeToolsMenu();

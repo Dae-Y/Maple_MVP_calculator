@@ -139,6 +139,10 @@
     "jupiter": {
       "normal": 1700000000,
       "hard": 5100000000
+    },
+    "kai": {
+      "normal": 0,
+      "hard": 0
     }
   },
   "periods": {
@@ -279,6 +283,10 @@
     "jupiter": {
       "normal": "weekly",
       "hard": "weekly"
+    },
+    "kai": {
+      "normal": "seasonal",
+      "hard": "seasonal"
     }
   }
 }

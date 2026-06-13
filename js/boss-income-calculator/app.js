@@ -4,21 +4,55 @@ document.addEventListener("DOMContentLoaded", () => {
   const STORAGE_KEY = "maple_tools_boss_income_characters_v1";
   const ACTIVE_CHARACTER_KEY = "maple_tools_boss_income_active_character_v1";
   const BOSS_SECTION_COLLAPSE_KEY = "maple_tools_boss_income_section_collapse_v1";
+  const BOSS_ORDER_MODE_KEY = "maple_tools_boss_income_order_mode_v1";
+  const BOSS_WEEKLY_FILTER_KEY = "maple_tools_boss_income_weekly_filter_v1";
+
+  const BELOW_LOTUS_DAMIEN_WEEKLY_BOSS_IDS = [
+    "zaqqum",
+    "magnus",
+    "hilla",
+    "vonbon",
+    "pierre",
+    "bloodyqueen",
+    "vellum",
+    "pinkbean",
+    "cygnus"
+  ];
+
+  const SELECTED_BOSS_NAME_ALIASES = {
+    "찬란한 흉성": "흉성",
+    "최초의 대적자": "대적자",
+    "감시자 칼로스": "칼로스",
+    "선택받은 세렌": "세렌",
+    "가디언 엔젤 슬라임": "가엔슬"
+  };
 
   // State
   let characters = []; // Array of character objects
   let activeCharacterId = null;
   let crystalPriceData = null;
   const bossUiStates = {}; // Temp UI state for bosses: { ["period:bossId"]: { difficultyId, partySize } }
+  let bossOrderMode = "default"; // "default" or "reverse"
+  let weeklyFilterState = {
+    hideBelowLotusDamien: false
+  };
+  let isWeeklyFilterMenuOpen = false;
 
   let sectionCollapseStates = {
     daily: true,
     weekly: false,
-    monthly: true
+    monthly: true,
+    seasonal: true
   };
 
   // DOM Elements
   const bossListContainer = document.getElementById("bossList");
+  const bossOrderDefaultButton = document.getElementById("bossOrderDefaultButton");
+  const bossOrderReverseButton = document.getElementById("bossOrderReverseButton");
+  const bossFilterButton = document.getElementById("bossFilterButton");
+  const bossFilterDropdown = document.getElementById("bossFilterDropdown");
+  const hideBelowLotusDamienCheckbox = document.getElementById("hideBelowLotusDamienCheckbox");
+  const bossFilterIndicator = document.getElementById("bossFilterIndicator");
   
   // Top Overview Card
   const crystalCountEl = document.getElementById("crystalCount");
@@ -42,6 +76,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const charCrystalCountEl = document.getElementById("charCrystalCount");
   const charMonthlyCountEl = document.getElementById("charMonthlyCount");
   const monthlyCompletionStatusEl = document.getElementById("monthlyCompletionStatus");
+  const charSeasonalCountEl = document.getElementById("charSeasonalCount");
+  const seasonalCompletionStatusEl = document.getElementById("seasonalCompletionStatus");
   const summaryWeekLabelEl = document.getElementById("summaryWeekLabel");
   const charMesoCountEl = document.getElementById("charMesoCount");
   const totalCrystalCountEl = document.getElementById("totalCrystalCount");
@@ -64,6 +100,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (man > 0) result.push(`${man}만`);
     
     return result.join(" ") + " 메소";
+  }
+
+  function formatCompactEok(value) {
+    const eok = value / 100000000;
+    const formatted = eok.toFixed(2).replace(/\.?0+$/, "");
+    return `${formatted}억`;
   }
 
   // Get price from JSON
@@ -159,6 +201,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (!char.monthlyRecords) {
       char.monthlyRecords = {};
+    }
+    if (!char.seasonalRecords) {
+      char.seasonalRecords = {};
     }
 
     const currentMonthKey = getKstMonthKey();
@@ -284,7 +329,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Populate UI states based on current active character selections
   function populateUiStates() {
-    const periods = ["daily", "weekly", "monthly"];
+    const periods = ["daily", "weekly", "monthly", "seasonal"];
     periods.forEach(period => {
       BOSS_DATA.forEach(boss => {
         const filteredDiffs = getBossDifficultiesForPeriod(boss, period);
@@ -330,6 +375,24 @@ document.addEventListener("DOMContentLoaded", () => {
             const key = `monthly:${record.bossId}`;
             const boss = BOSS_DATA.find(b => b.id === record.bossId);
             const filteredDiffs = boss ? getBossDifficultiesForPeriod(boss, "monthly") : [];
+            const defaultDiffId = filteredDiffs.length > 0 ? filteredDiffs[0].id : "";
+
+            bossUiStates[key] = {
+              difficultyId: record.difficultyId || defaultDiffId,
+              partySize: record.partySize || 1
+            };
+          }
+        });
+      }
+
+      // 3. Populate seasonal
+      if (activeChar.seasonalRecords) {
+        Object.keys(activeChar.seasonalRecords).forEach(recordKey => {
+          const record = activeChar.seasonalRecords[recordKey];
+          if (record) {
+            const key = `seasonal:${record.bossId}`;
+            const boss = BOSS_DATA.find(b => b.id === record.bossId);
+            const filteredDiffs = boss ? getBossDifficultiesForPeriod(boss, "seasonal") : [];
             const defaultDiffId = filteredDiffs.length > 0 ? filteredDiffs[0].id : "";
 
             bossUiStates[key] = {
@@ -395,6 +458,10 @@ document.addEventListener("DOMContentLoaded", () => {
             char.monthlyRecords = {};
             cleanupHappened = true;
           }
+          if (!char.seasonalRecords) {
+            char.seasonalRecords = {};
+            cleanupHappened = true;
+          }
 
           // Check monthlyRecords keys and delete any where monthKey !== currentMonthKey
           Object.keys(char.monthlyRecords).forEach(key => {
@@ -432,7 +499,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const storedCollapse = localStorage.getItem(BOSS_SECTION_COLLAPSE_KEY);
       if (storedCollapse) {
         try {
-          sectionCollapseStates = JSON.parse(storedCollapse);
+          const parsed = JSON.parse(storedCollapse);
+          if (parsed && typeof parsed === "object") {
+            sectionCollapseStates = {
+              ...sectionCollapseStates,
+              ...parsed
+            };
+          }
         } catch (e) {
           // Keep defaults
         }
@@ -455,6 +528,35 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         charNameInput.value = "";
         charJobInput.value = "";
+      }
+
+      // Load boss display order mode
+      try {
+        const storedOrderMode = localStorage.getItem(BOSS_ORDER_MODE_KEY);
+        if (storedOrderMode === "default" || storedOrderMode === "reverse") {
+          bossOrderMode = storedOrderMode;
+        } else {
+          bossOrderMode = "default";
+        }
+      } catch (e) {
+        bossOrderMode = "default";
+      }
+
+      // Load boss weekly filter state
+      try {
+        const storedFilter = localStorage.getItem(BOSS_WEEKLY_FILTER_KEY);
+        if (storedFilter) {
+          const parsed = JSON.parse(storedFilter);
+          if (parsed && typeof parsed.hideBelowLotusDamien === "boolean") {
+            weeklyFilterState.hideBelowLotusDamien = parsed.hideBelowLotusDamien;
+          }
+        }
+      } catch (e) {
+        weeklyFilterState.hideBelowLotusDamien = false;
+      }
+
+      if (hideBelowLotusDamienCheckbox) {
+        hideBelowLotusDamienCheckbox.checked = weeklyFilterState.hideBelowLotusDamien;
       }
     } catch (e) {
       console.error("Failed to load local storage state:", e);
@@ -618,7 +720,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const periods = [
       { id: "daily", label: "일간 보스" },
       { id: "weekly", label: "주간 보스" },
-      { id: "monthly", label: "월간 보스" }
+      { id: "monthly", label: "월간 보스" },
+      { id: "seasonal", label: "시즌 보스" }
     ];
 
     periods.forEach(pInfo => {
@@ -629,11 +732,18 @@ document.addEventListener("DOMContentLoaded", () => {
       BOSS_DATA.forEach(boss => {
         const diffs = getBossDifficultiesForPeriod(boss, periodId);
         if (diffs.length > 0) {
+          if (periodId === "weekly" && weeklyFilterState.hideBelowLotusDamien && BELOW_LOTUS_DAMIEN_WEEKLY_BOSS_IDS.includes(boss.id)) {
+            return;
+          }
           filteredBossList.push({ boss, diffs });
         }
       });
 
       if (filteredBossList.length === 0) return;
+
+      if ((periodId === "weekly" || periodId === "monthly") && bossOrderMode === "reverse") {
+        filteredBossList.reverse();
+      }
 
       let selectedCount = 0;
       if (activeChar) {
@@ -649,6 +759,13 @@ document.addEventListener("DOMContentLoaded", () => {
           filteredBossList.forEach(item => {
             const recordKey = `${currentMonthKey}:${item.boss.id}`;
             if (activeChar.monthlyRecords[recordKey]) {
+              selectedCount++;
+            }
+          });
+        } else if (periodId === "seasonal" && activeChar.seasonalRecords) {
+          filteredBossList.forEach(item => {
+            const recordKey = item.boss.id;
+            if (activeChar.seasonalRecords[recordKey]) {
               selectedCount++;
             }
           });
@@ -747,6 +864,15 @@ document.addEventListener("DOMContentLoaded", () => {
           noteEl.className = "boss-period-note";
           noteEl.textContent = "월간 보스는 캐릭터당 월 1회 기준으로 기록됩니다. 주간 보스 12개 제한에는 포함되지 않지만, 전체 결정석 90개 제한과 수익 합산에는 포함됩니다.";
           bodyEl.appendChild(noteEl);
+        } else if (periodId === "seasonal") {
+          // Render note inside seasonal section body
+          const noteEl = document.createElement("div");
+          noteEl.className = "boss-period-note";
+          noteEl.innerHTML = `
+            시즌 보스는 기간 한정 보스 기록용입니다. 현재 수익 합산과 결정석 90개 제한에는 포함되지 않습니다.<br />
+            <span style="font-weight: 800; color: #4f46e5;">고정 보상 참고: 황금 메소 주머니, 솔 에르다의 기운, 카이 보상 상자 등</span>
+          `;
+          bodyEl.appendChild(noteEl);
         }
 
         // Render weekly/monthly bosses as selectable rows
@@ -780,7 +906,9 @@ document.addEventListener("DOMContentLoaded", () => {
           const isSelected = activeChar && (
             periodId === "weekly"
               ? (activeChar.selectedBosses && !!activeChar.selectedBosses[key])
-              : (activeChar.monthlyRecords && !!activeChar.monthlyRecords[`${getKstMonthKey()}:${boss.id}`])
+              : (periodId === "monthly"
+                ? (activeChar.monthlyRecords && !!activeChar.monthlyRecords[`${getKstMonthKey()}:${boss.id}`])
+                : (activeChar.seasonalRecords && !!activeChar.seasonalRecords[boss.id]))
           );
           if (isSelected) {
             bossRow.classList.add("is-selected");
@@ -796,6 +924,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="boss-name-group" style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
                   <span class="boss-name" style="margin-bottom: 0;">${boss.name}</span>
                   <span class="boss-completion-date" style="font-size: 10.5px; color: #4f46e5; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">이번 달 ${boss.name}: ${formattedDate}</span>
+                </div>
+              `;
+            }
+          } else if (isSelected && periodId === "seasonal") {
+            const recordKey = boss.id;
+            const record = activeChar.seasonalRecords ? activeChar.seasonalRecords[recordKey] : null;
+            if (record && record.completedAt) {
+              const formattedDate = formatKstCompletionDate(record.completedAt);
+              nameGroupHtml = `
+                <div class="boss-name-group" style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+                  <span class="boss-name" style="margin-bottom: 0;">${boss.name}</span>
+                  <span class="boss-completion-date" style="font-size: 10.5px; color: #4f46e5; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">✓ 완료 (${formattedDate})</span>
                 </div>
               `;
             }
@@ -823,13 +963,24 @@ document.addEventListener("DOMContentLoaded", () => {
                 <button class="boss-stepper-btn btn-next-diff" type="button" ${isDisabled ? "disabled" : ""}>&gt;</button>
               </div>
 
-              <div class="boss-stepper boss-party-stepper">
-                <button class="boss-stepper-btn btn-prev-party" type="button" ${isDisabled ? "disabled" : ""}>&lt;</button>
-                <div class="boss-stepper-val-container">
-                  <span class="boss-stepper-label">${currentPartySize}인</span>
-                </div>
-                <button class="boss-stepper-btn btn-next-party" type="button" ${isDisabled ? "disabled" : ""}>&gt;</button>
-              </div>
+              ${periodId === "seasonal"
+                ? `
+                  <div class="boss-stepper boss-party-stepper" style="border-color: transparent; background: #f3f4f6; justify-content: center; cursor: default;">
+                    <div class="boss-stepper-val-container">
+                      <span class="boss-stepper-label" style="color: #4b5563;">1인</span>
+                    </div>
+                  </div>
+                `
+                : `
+                  <div class="boss-stepper boss-party-stepper">
+                    <button class="boss-stepper-btn btn-prev-party" type="button" ${isDisabled ? "disabled" : ""}>&lt;</button>
+                    <div class="boss-stepper-val-container">
+                      <span class="boss-stepper-label">${currentPartySize}인</span>
+                    </div>
+                    <button class="boss-stepper-btn btn-next-party" type="button" ${isDisabled ? "disabled" : ""}>&gt;</button>
+                  </div>
+                `
+              }
             </div>
           `;
 
@@ -853,6 +1004,8 @@ document.addEventListener("DOMContentLoaded", () => {
               } else if (periodId === "monthly") {
                 const recordKey = `${getKstMonthKey()}:${boss.id}`;
                 activeChar.monthlyRecords[recordKey].difficultyId = newDiffId;
+              } else if (periodId === "seasonal") {
+                activeChar.seasonalRecords[boss.id].difficultyId = newDiffId;
               }
             }
             saveState();
@@ -889,14 +1042,18 @@ document.addEventListener("DOMContentLoaded", () => {
             updateUI();
           };
 
-          btnPrevParty.addEventListener("click", (e) => {
-            e.stopPropagation();
-            changeParty(-1);
-          });
-          btnNextParty.addEventListener("click", (e) => {
-            e.stopPropagation();
-            changeParty(1);
-          });
+          if (btnPrevParty) {
+            btnPrevParty.addEventListener("click", (e) => {
+              e.stopPropagation();
+              changeParty(-1);
+            });
+          }
+          if (btnNextParty) {
+            btnNextParty.addEventListener("click", (e) => {
+              e.stopPropagation();
+              changeParty(1);
+            });
+          }
 
           bossRow.addEventListener("click", () => {
             if (isDisabled) {
@@ -910,6 +1067,8 @@ document.addEventListener("DOMContentLoaded", () => {
               } else if (periodId === "monthly") {
                 const recordKey = `${getKstMonthKey()}:${boss.id}`;
                 delete activeChar.monthlyRecords[recordKey];
+              } else if (periodId === "seasonal") {
+                delete activeChar.seasonalRecords[boss.id];
               }
             } else {
               if (periodId === "weekly") {
@@ -937,6 +1096,18 @@ document.addEventListener("DOMContentLoaded", () => {
                   completedAt: getKstIsoString(now),
                   monthKey: monthKey
                 };
+              } else if (periodId === "seasonal") {
+                if (!activeChar.seasonalRecords) {
+                  activeChar.seasonalRecords = {};
+                }
+                const now = new Date();
+                activeChar.seasonalRecords[boss.id] = {
+                  bossId: boss.id,
+                  period: periodId,
+                  difficultyId: state.difficultyId,
+                  partySize: 1,
+                  completedAt: getKstIsoString(now)
+                };
               }
             }
             saveState();
@@ -951,8 +1122,38 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Update weekly filter menu visibility classes and aria attributes
+  function updateWeeklyFilterMenuVisibility() {
+    if (!bossFilterDropdown || !bossFilterButton) return;
+    bossFilterDropdown.classList.toggle("is-open", isWeeklyFilterMenuOpen);
+    bossFilterButton.setAttribute("aria-expanded", String(isWeeklyFilterMenuOpen));
+  }
+
+  // Update order buttons active status
+  function updateOrderButtonsUI() {
+    if (!bossOrderDefaultButton || !bossOrderReverseButton) return;
+    if (bossOrderMode === "reverse") {
+      bossOrderDefaultButton.classList.remove("is-active");
+      bossOrderReverseButton.classList.add("is-active");
+    } else {
+      bossOrderDefaultButton.classList.add("is-active");
+      bossOrderReverseButton.classList.remove("is-active");
+    }
+  }
+
   // Update UI, calculations, summaries, warnings, and persistence
   function updateUI() {
+    if (bossFilterIndicator) {
+      bossFilterIndicator.style.display = weeklyFilterState.hideBelowLotusDamien ? "inline-block" : "none";
+    }
+    if (bossFilterButton) {
+      if (weeklyFilterState.hideBelowLotusDamien) {
+        bossFilterButton.classList.add("is-active");
+      } else {
+        bossFilterButton.classList.remove("is-active");
+      }
+    }
+
     if (summaryWeekLabelEl) {
       summaryWeekLabelEl.textContent = getKstMonthWeekLabel();
     }
@@ -993,6 +1194,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 3. Perform Calculations
     let activeCharCrystals = 0;
     let activeCharMonthly = 0;
+    let activeCharSeasonal = 0;
     let activeCharMeso = 0;
     let totalCrystalsAll = 0;
     let totalMesoAll = 0;
@@ -1018,6 +1220,9 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       activeCharMonthly = monthlyActiveKeys.length;
 
+      // Character seasonal bosses count
+      activeCharSeasonal = Object.keys(activeChar.seasonalRecords || {}).length;
+
       let activeBossItemsHtml = "";
 
       // Weekly bosses selection display
@@ -1035,7 +1240,8 @@ document.addEventListener("DOMContentLoaded", () => {
               const actualPrice = Math.floor(basePrice / partySize);
               activeCharMeso += actualPrice;
               
-              const displayLabel = `${boss.name} (${diff.label} · ${partySize}인)`;
+              const bossDisplayName = SELECTED_BOSS_NAME_ALIASES[boss.name] || boss.name;
+              const displayLabel = `${bossDisplayName} (${diff.label} · ${partySize}인)`;
 
               activeBossItemsHtml += `
                 <li class="selected-boss-item selected-boss-row" data-boss-icon="${boss.icon}">
@@ -1048,7 +1254,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   <div class="selected-boss-info-text">
                     <span class="selected-boss-name">${displayLabel}</span>
                   </div>
-                  <span class="selected-boss-price">${formatMesoKorean(actualPrice)}</span>
+                  <span class="selected-boss-price">${formatCompactEok(actualPrice)}</span>
                 </li>
               `;
             }
@@ -1070,7 +1276,8 @@ document.addEventListener("DOMContentLoaded", () => {
               const actualPrice = Math.floor(basePrice / partySize);
               activeCharMeso += actualPrice;
               
-              const displayLabel = `${boss.name} (${diff.label} · ${partySize}인)`;
+              const bossDisplayName = SELECTED_BOSS_NAME_ALIASES[boss.name] || boss.name;
+              const displayLabel = `${bossDisplayName} (${diff.label} · ${partySize}인)`;
               const dateText = record.completedAt ? formatKstCompletionDate(record.completedAt) : "완료";
 
               activeBossItemsHtml += `
@@ -1085,7 +1292,40 @@ document.addEventListener("DOMContentLoaded", () => {
                     <span class="selected-boss-name">${displayLabel}</span>
                     <span class="selected-boss-date">${dateText}</span>
                   </div>
-                  <span class="selected-boss-price">${formatMesoKorean(actualPrice)}</span>
+                  <span class="selected-boss-price">${formatCompactEok(actualPrice)}</span>
+                </li>
+              `;
+            }
+          }
+        }
+      });
+
+      // Seasonal bosses selection display
+      const seasonalActiveKeys = Object.keys(activeChar.seasonalRecords || {});
+      seasonalActiveKeys.forEach(key => {
+        const record = activeChar.seasonalRecords[key];
+        if (record && record.difficultyId) {
+          const boss = BOSS_DATA.find(b => b.id === record.bossId);
+          if (boss) {
+            const diffs = getBossDifficultiesForPeriod(boss, "seasonal");
+            const diff = diffs.find(d => d.id === record.difficultyId) || boss.difficulties.find(d => d.id === record.difficultyId);
+            if (diff) {
+              const bossDisplayName = SELECTED_BOSS_NAME_ALIASES[boss.name] || boss.name;
+              const displayLabel = `${bossDisplayName} (${diff.label} · 1인)`;
+              
+              activeBossItemsHtml += `
+                <li class="selected-boss-item selected-boss-row" data-boss-icon="${boss.icon}">
+                  <div class="selected-boss-icon-wrapper">
+                    <img 
+                      alt="${boss.name}" 
+                      class="selected-boss-icon" 
+                    />
+                  </div>
+                  <div class="selected-boss-info-text">
+                    <span class="selected-boss-name">${displayLabel}</span>
+                    <span class="selected-boss-date" style="color: #6d28d9; font-weight: 700;">시즌 보스 완료</span>
+                  </div>
+                  <span class="selected-boss-price" style="color: #6d28d9; font-weight: 700;">보상 기록</span>
                 </li>
               `;
             }
@@ -1191,6 +1431,36 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
     }
+    if (charSeasonalCountEl) {
+      charSeasonalCountEl.textContent = `${activeCharSeasonal}개`;
+    }
+    if (seasonalCompletionStatusEl) {
+      if (!activeChar) {
+        seasonalCompletionStatusEl.innerHTML = `<div class="seasonal-completion-status is-empty">이번 시즌 카이: 미완료</div>`;
+      } else {
+        const seasonalBosses = BOSS_DATA.filter(boss => getBossDifficultiesForPeriod(boss, "seasonal").length > 0);
+        if (seasonalBosses.length > 0) {
+          let statusListHtml = "";
+          seasonalBosses.forEach(boss => {
+            const record = activeChar.seasonalRecords ? activeChar.seasonalRecords[boss.id] : null;
+            if (record) {
+              const dateText = record.completedAt ? `${formatKstMonthDay(record.completedAt)} 완료` : "완료";
+              statusListHtml += `<div class="seasonal-completion-status is-complete">✓ 이번 시즌 ${boss.name}: ${dateText}</div>`;
+            } else {
+              statusListHtml += `<div class="seasonal-completion-status is-empty">이번 시즌 ${boss.name}: 미완료</div>`;
+            }
+          });
+          
+          if (seasonalBosses.length > 1) {
+            seasonalCompletionStatusEl.innerHTML = `<div class="seasonal-completion-list">${statusListHtml}</div>`;
+          } else {
+            seasonalCompletionStatusEl.innerHTML = statusListHtml;
+          }
+        } else {
+          seasonalCompletionStatusEl.innerHTML = `<div class="seasonal-completion-status is-empty">이번 시즌 카이: 미완료</div>`;
+        }
+      }
+    }
     if (charMesoCountEl) {
       charMesoCountEl.textContent = formatMesoKorean(activeCharMeso);
     }
@@ -1283,6 +1553,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (resetCharBtn) {
       resetCharBtn.disabled = !activeChar;
     }
+
+    // Update display order buttons active status
+    updateOrderButtonsUI();
+    updateWeeklyFilterMenuVisibility();
   }
 
   // Character form submit mapping
@@ -1312,7 +1586,8 @@ document.addEventListener("DOMContentLoaded", () => {
         job: job,
         avatar: null,
         selectedBosses: {},
-        monthlyRecords: {}
+        monthlyRecords: {},
+        seasonalRecords: {}
       };
 
       characters.push(newChar);
@@ -1360,6 +1635,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (activeChar) {
         activeChar.selectedBosses = {};
         activeChar.monthlyRecords = {};
+        activeChar.seasonalRecords = {};
         saveState();
         populateUiStates();
         updateUI();
@@ -1374,6 +1650,7 @@ document.addEventListener("DOMContentLoaded", () => {
         characters.forEach(char => {
           char.selectedBosses = {};
           char.monthlyRecords = {};
+          char.seasonalRecords = {};
         });
         saveState();
         populateUiStates();
@@ -1381,6 +1658,77 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+
+  // Boss display order button click handlers
+  if (bossOrderDefaultButton) {
+    bossOrderDefaultButton.addEventListener("click", () => {
+      if (bossOrderMode !== "default") {
+        bossOrderMode = "default";
+        try {
+          localStorage.setItem(BOSS_ORDER_MODE_KEY, "default");
+        } catch (e) {}
+        updateUI();
+      }
+    });
+  }
+
+  if (bossOrderReverseButton) {
+    bossOrderReverseButton.addEventListener("click", () => {
+      if (bossOrderMode !== "reverse") {
+        bossOrderMode = "reverse";
+        try {
+          localStorage.setItem(BOSS_ORDER_MODE_KEY, "reverse");
+        } catch (e) {}
+        updateUI();
+      }
+    });
+  }
+
+  // Boss weekly filter dropdown click toggler
+  if (bossFilterButton && bossFilterDropdown) {
+    bossFilterButton.addEventListener("click", (e) => {
+      e.stopPropagation();
+      isWeeklyFilterMenuOpen = !isWeeklyFilterMenuOpen;
+      updateWeeklyFilterMenuVisibility();
+    });
+  }
+
+  // Filter checkbox change handler
+  if (hideBelowLotusDamienCheckbox) {
+    hideBelowLotusDamienCheckbox.addEventListener("change", (e) => {
+      weeklyFilterState.hideBelowLotusDamien = e.target.checked;
+      try {
+        localStorage.setItem(BOSS_WEEKLY_FILTER_KEY, JSON.stringify(weeklyFilterState));
+      } catch (err) {}
+      updateUI();
+    });
+  }
+
+  // Prevent closing dropdown when clicking inside it
+  if (bossFilterDropdown) {
+    bossFilterDropdown.addEventListener("click", (e) => {
+      e.stopPropagation();
+    });
+  }
+
+  // Click outside listener to close dropdown
+  document.addEventListener("click", (e) => {
+    if (bossFilterDropdown && isWeeklyFilterMenuOpen) {
+      const isClickInside = bossFilterDropdown.contains(e.target) || (bossFilterButton && bossFilterButton.contains(e.target));
+      if (!isClickInside) {
+        isWeeklyFilterMenuOpen = false;
+        updateWeeklyFilterMenuVisibility();
+      }
+    }
+  });
+
+  // Escape key press to close dropdown
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && bossFilterDropdown && isWeeklyFilterMenuOpen) {
+      isWeeklyFilterMenuOpen = false;
+      updateWeeklyFilterMenuVisibility();
+    }
+  });
 
   // --- KST Reset Countdown Area ---
   const KST_OFFSET_MS = 9 * 60 * 60 * 1000;

@@ -324,5 +324,16 @@ const BOSS_DATA = [
       { id: "normal", label: "노멀" },
       { id: "hard", label: "하드" }
     ]
+  },
+  {
+    id: "kai",
+    name: "카이",
+    icon: "kai.png",
+    forceType: null,
+    difficulties: [
+      { id: "normal", label: "노멀" },
+      { id: "hard", label: "하드" }
+    ],
+    seasonal: true
   }
 ];
