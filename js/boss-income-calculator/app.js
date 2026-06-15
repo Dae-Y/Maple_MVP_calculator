@@ -6,9 +6,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const BOSS_SECTION_COLLAPSE_KEY = "maple_tools_boss_income_section_collapse_v1";
   const BOSS_ORDER_MODE_KEY = "maple_tools_boss_income_order_mode_v1";
   const BOSS_WEEKLY_FILTER_KEY = "maple_tools_boss_income_weekly_filter_v1";
-  const BOSS_BACKUP_SCHEMA_VERSION = 1;
+  const BOSS_BACKUP_SCHEMA_VERSION = 2;
   const BOSS_CHARACTER_COPY_TEMPLATE_KEY = "mapleToolsBossCharacterCopyTemplateV1";
   const BOSS_CHARACTER_COPY_TEMPLATE_VERSION = 1;
+  const BOSS_WEEKLY_ACTUAL_RECORDS_KEY = "mapleToolsBossWeeklyActualRecordsV1";
 
   const BELOW_LOTUS_DAMIEN_WEEKLY_BOSS_IDS = [
     "zaqqum",
@@ -48,6 +49,10 @@ document.addEventListener("DOMContentLoaded", () => {
     seasonal: true
   };
 
+  let weeklyActualRecords = {}; // Weekly actual income records
+  let viewedWeeklyRecordMonth = { year: 2026, month: 6 };
+  let expandedWeeklyRecordKey = null; // Key of the currently expanded weekly record row
+
   // DOM Elements
   const bossListContainer = document.getElementById("bossList");
   const bossOrderDefaultButton = document.getElementById("bossOrderDefaultButton");
@@ -62,6 +67,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const totalMesoEl = document.getElementById("totalMeso");
   const limitMeterBar = document.getElementById("limitMeterBar");
   const weeklyLimitWarningEl = document.getElementById("weeklyLimitWarning");
+
+  // Previous Week Actual Summary DOM Elements (relocated to Top Left card)
+  const previousWeekActualSummaryEl = document.getElementById("previousWeekActualSummary");
+  const previousWeekActualSaleLabelEl = document.getElementById("previousWeekActualSaleLabel");
+  const previousWeekActualCrystalCountEl = document.getElementById("previousWeekActualCrystalCount");
+  const previousWeekActualIncomeEl = document.getElementById("previousWeekActualIncome");
+  const previousWeekActualProgressEl = document.getElementById("previousWeekActualProgress");
 
   // Character column
   const characterListEl = document.getElementById("characterList");
@@ -90,6 +102,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const selectedBossListEl = document.getElementById("selectedBossList");
   const resetCharBtn = document.getElementById("resetCharBtn");
   const resetAllBtn = document.getElementById("resetAllBtn");
+
+  const btnPrevMonth = document.getElementById("btnPrevMonth");
+  const btnNextMonth = document.getElementById("btnNextMonth");
 
   // Meso formatting helper (e.g. 1억 2300만, 1500만)
   function formatMesoKorean(value) {
@@ -195,6 +210,167 @@ document.addEventListener("DOMContentLoaded", () => {
     const day = kstDate.getUTCDate();
     const week = Math.ceil(day / 7);
     return `${month}월 ${week}주차`;
+  }
+
+  // Calculate Thursday-Wednesday weekly cycle period matching countdown resets
+  function getKstWeeklyPeriod(date = new Date()) {
+    const nextThursday = getNextThursdayKst(date);
+    // startKst is Thursday 00:00 KST (7 days before next Thursday)
+    // We add 1 hour offset to representative date to avoid any UTC boundary issue when formatting
+    const representativeDate = new Date(nextThursday.getTime() - 7 * 24 * 60 * 60 * 1000 + 60 * 60 * 1000); // Thursday 01:00 KST
+    
+    const startKst = new Date(nextThursday.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const endKst = new Date(nextThursday.getTime() - 1000); // end date is Wednesday 23:59:59 KST
+    
+    // Format start and end date labels: YYYY-MM-DD in KST
+    const getKstYmd = (d) => {
+      const kst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+      const year = kst.getUTCFullYear();
+      const month = String(kst.getUTCMonth() + 1).padStart(2, "0");
+      const day = String(kst.getUTCDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    };
+
+    const startKstDate = getKstYmd(startKst);
+    const endKstDate = getKstYmd(endKst);
+    
+    const weekLabel = getKstMonthWeekLabel(representativeDate);
+    
+    const kstRep = new Date(representativeDate.getTime() + 9 * 60 * 60 * 1000);
+    const rMonth = kstRep.getUTCMonth() + 1;
+    const rMonthStr = String(rMonth).padStart(2, "0");
+    const rYear = kstRep.getUTCFullYear();
+    const rDayVal = kstRep.getUTCDate();
+    const rWeekIndex = Math.ceil(rDayVal / 7);
+    
+    const weekKey = `${rYear}-${rMonthStr}-W${rWeekIndex}`;
+    const monthKey = `${rYear}-${rMonthStr}`;
+    
+    return {
+      weekKey: weekKey,
+      monthKey: monthKey,
+      weekLabel: weekLabel,
+      startKstDate: startKstDate,
+      endKstDate: endKstDate
+    };
+  }
+
+  // Snapshot active character's current week setup for actual records
+  function getCharacterSnapshot(char) {
+    const weeklyKeys = Object.keys(char.selectedBosses || {}).filter(key => {
+      const period = char.selectedBosses[key].period || key.split(":")[0];
+      return period === "weekly";
+    });
+    
+    let crystalCount = weeklyKeys.length;
+    let actualMeso = 0;
+    
+    // Weekly income
+    weeklyKeys.forEach(key => {
+      const selection = char.selectedBosses[key];
+      if (selection && selection.difficultyId) {
+        const bossId = selection.bossId || key.split(":")[1];
+        const basePrice = getCrystalPrice(bossId, selection.difficultyId);
+        const partySize = selection.partySize || 1;
+        actualMeso += Math.floor(basePrice / partySize);
+      }
+    });
+
+    // Monthly income (current month)
+    const currentMonthKey = getKstMonthKey();
+    const monthlyKeys = Object.keys(char.monthlyRecords || {}).filter(key => {
+      const record = char.monthlyRecords[key];
+      return record && record.monthKey === currentMonthKey;
+    });
+    monthlyKeys.forEach(key => {
+      const record = char.monthlyRecords[key];
+      if (record && record.difficultyId) {
+        const basePrice = getCrystalPrice(record.bossId, record.difficultyId);
+        const partySize = record.partySize || 1;
+        actualMeso += Math.floor(basePrice / partySize);
+      }
+    });
+
+    // Deep clone selected weekly bosses
+    const bossesSnapshot = JSON.parse(JSON.stringify(char.selectedBosses || {}));
+    const monthlySnapshot = JSON.parse(JSON.stringify(char.monthlyRecords || {}));
+
+    return {
+      characterId: char.id,
+      name: char.name,
+      job: char.job,
+      crystalCount: crystalCount,
+      actualMeso: actualMeso,
+      bossesSnapshot: bossesSnapshot,
+      monthlySnapshot: monthlySnapshot,
+      completedAt: new Date().toISOString()
+    };
+  }
+
+  // Calculate totals from snapshot characters list
+  function getWeeklyActualRecordTotals(record) {
+    if (!record) {
+      return { crystalCount: 0, actualMeso: 0, completedCharacterCount: 0, isManual: false };
+    }
+
+    let completedCharacterCount = 0;
+    if (record.completedCharacters) {
+      completedCharacterCount = Object.keys(record.completedCharacters).filter(
+        charId => record.completedCharacters[charId]
+      ).length;
+    }
+
+    if (typeof record.manualActualMeso === "number") {
+      return {
+        crystalCount: typeof record.manualCrystalCount === "number" ? record.manualCrystalCount : null,
+        actualMeso: record.manualActualMeso,
+        completedCharacterCount: completedCharacterCount,
+        isManual: true
+      };
+    }
+
+    let crystalCount = 0;
+    let actualMeso = 0;
+    if (record.completedCharacters) {
+      Object.keys(record.completedCharacters).forEach(charId => {
+        const charSnapshot = record.completedCharacters[charId];
+        if (charSnapshot) {
+          crystalCount += charSnapshot.crystalCount || 0;
+          actualMeso += charSnapshot.actualMeso || 0;
+        }
+      });
+    }
+
+    return {
+      crystalCount: crystalCount,
+      actualMeso: actualMeso,
+      completedCharacterCount: completedCharacterCount,
+      isManual: false
+    };
+  }
+
+  // Validate completion status
+  function isCharacterCompletedForCurrentWeek(charId) {
+    const periodInfo = getKstWeeklyPeriod();
+    const weekKey = periodInfo.weekKey;
+    return !!(weeklyActualRecords[weekKey] && 
+              weeklyActualRecords[weekKey].completedCharacters && 
+              weeklyActualRecords[weekKey].completedCharacters[charId]);
+  }
+
+  // Save active character name/job text edits if not empty
+  function saveActiveCharacterEdits() {
+    if (activeCharacterId) {
+      const name = charNameInput.value.trim();
+      const job = charJobInput.value.trim();
+      if (name) {
+        const char = getActiveCharacter();
+        if (char) {
+          char.name = name;
+          char.job = job;
+        }
+      }
+    }
   }
 
   // Migrate legacy format from storage
@@ -561,10 +737,34 @@ document.addEventListener("DOMContentLoaded", () => {
       if (hideBelowLotusDamienCheckbox) {
         hideBelowLotusDamienCheckbox.checked = weeklyFilterState.hideBelowLotusDamien;
       }
+
+      // Load weekly actual records
+      try {
+        const storedWeekly = localStorage.getItem(BOSS_WEEKLY_ACTUAL_RECORDS_KEY);
+        if (storedWeekly) {
+          const parsed = JSON.parse(storedWeekly);
+          if (parsed && typeof parsed === "object") {
+            weeklyActualRecords = parsed;
+          } else {
+            weeklyActualRecords = {};
+          }
+        } else {
+          weeklyActualRecords = {};
+        }
+      } catch (e) {
+        weeklyActualRecords = {};
+      }
+      
+      // Initialize viewedWeeklyRecordMonth to current KST month
+      const kstParts = getCurrentKstDateParts();
+      viewedWeeklyRecordMonth = { year: kstParts.year, month: kstParts.month };
     } catch (e) {
       console.error("Failed to load local storage state:", e);
       characters = [];
       activeCharacterId = null;
+      weeklyActualRecords = {};
+      const kstParts = getCurrentKstDateParts();
+      viewedWeeklyRecordMonth = { year: kstParts.year, month: kstParts.month };
     }
   }
 
@@ -577,6 +777,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         localStorage.removeItem(ACTIVE_CHARACTER_KEY);
       }
+      localStorage.setItem(BOSS_WEEKLY_ACTUAL_RECORDS_KEY, JSON.stringify(weeklyActualRecords));
     } catch (e) {
       console.error("Failed to save state to local storage:", e);
     }
@@ -653,8 +854,12 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       const isActive = char.id === activeCharacterId ? "is-active" : "";
+      const isCompleted = isCharacterCompletedForCurrentWeek(char.id);
+      const cardClass = `character-card ${isActive} ${isCompleted ? "is-week-completed" : ""}`;
+      const completeBtnClass = `character-complete-button ${isCompleted ? "is-active" : ""}`;
+
       const card = document.createElement("div");
-      card.className = `character-card ${isActive}`;
+      card.className = cardClass;
       card.dataset.charId = char.id;
 
       card.innerHTML = `
@@ -668,20 +873,59 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="char-income">${formatMesoKorean(charMeso)}</span>
           </div>
         </div>
-        <button class="btn-delete-char" type="button" aria-label="캐릭터 삭제" title="삭제">
-          &times;
-        </button>
+        <div class="char-card-actions">
+          <button class="${completeBtnClass}" type="button" aria-label="완료 여부" title="완료 체크">✓</button>
+          <button class="btn-delete-char" type="button" aria-label="캐릭터 삭제" title="삭제">
+            &times;
+          </button>
+        </div>
       `;
 
-      // Select character on click (except when clicking delete button)
+      // Select character on click (except when clicking delete button or complete button)
       card.addEventListener("click", (e) => {
-        if (e.target.classList.contains("btn-delete-char")) return;
+        if (e.target.classList.contains("btn-delete-char") || e.target.classList.contains("character-complete-button")) return;
         activeCharacterId = char.id;
         // Populate inputs with current character's name/job
         charNameInput.value = char.name;
         charJobInput.value = char.job;
         saveState();
         populateUiStates();
+        updateUI();
+      });
+
+      // Complete character logic
+      const completeBtn = card.querySelector(".character-complete-button");
+      completeBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        
+        // Save current active character name/job text inputs before toggling completion
+        saveActiveCharacterEdits();
+
+        const periodInfo = getKstWeeklyPeriod();
+        const weekKey = periodInfo.weekKey;
+
+        if (isCharacterCompletedForCurrentWeek(char.id)) {
+          // Uncheck: remove snapshot from weekly actual records
+          if (weeklyActualRecords[weekKey] && weeklyActualRecords[weekKey].completedCharacters) {
+            delete weeklyActualRecords[weekKey].completedCharacters[char.id];
+            if (Object.keys(weeklyActualRecords[weekKey].completedCharacters).length === 0) {
+              delete weeklyActualRecords[weekKey];
+            }
+          }
+        } else {
+          // Check: save snapshot of current selected bosses & totals
+          if (!weeklyActualRecords[weekKey]) {
+            weeklyActualRecords[weekKey] = {
+              completedCharacters: {}
+            };
+          }
+          // Snapshot rule: save a snapshot of the character's current selected bosses, crystal count, and actual meso
+          // so that later changes to character selections do not automatically modify this saved record.
+          const snapshot = getCharacterSnapshot(char);
+          weeklyActualRecords[weekKey].completedCharacters[char.id] = snapshot;
+        }
+
+        saveState();
         updateUI();
       });
 
@@ -1157,8 +1401,13 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    const currentWeekPeriod = getKstWeeklyPeriod();
+    const weeklySaleCountLabelEl = document.getElementById("weeklySaleCountLabel");
+    if (weeklySaleCountLabelEl) {
+      weeklySaleCountLabelEl.textContent = `${currentWeekPeriod.weekLabel} 판매 개수 (전체)`;
+    }
     if (summaryWeekLabelEl) {
-      summaryWeekLabelEl.textContent = getKstMonthWeekLabel();
+      summaryWeekLabelEl.textContent = currentWeekPeriod.weekLabel;
     }
     renderCharacters();
     renderBosses();
@@ -1560,6 +1809,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // Update display order buttons active status
     updateOrderButtonsUI();
     updateWeeklyFilterMenuVisibility();
+
+    // Render weekly actual summaries
+    renderPrevWeekSummary();
+    renderBossIncomeCalendar();
   }
 
   // Character form submit mapping
@@ -1819,17 +2072,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Export Boss Backup
   function exportBossBackup() {
     // Save current character name/job text inputs before export if not empty
-    if (activeCharacterId) {
-      const name = charNameInput.value.trim();
-      const job = charJobInput.value.trim();
-      if (name) {
-        const char = getActiveCharacter();
-        if (char) {
-          char.name = name;
-          char.job = job;
-        }
-      }
-    }
+    saveActiveCharacterEdits();
     saveState();
 
     const now = new Date();
@@ -1845,6 +2088,7 @@ document.addEventListener("DOMContentLoaded", () => {
       data: {
         characters: characters,
         activeCharacterId: activeCharacterId,
+        weeklyActualRecords: weeklyActualRecords,
         uiPreferences: {
           bossOrderMode: bossOrderMode,
           weeklyFilter: weeklyFilterState,
@@ -1875,7 +2119,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         
         // 2. Schema version validation
-        if (backup.schemaVersion !== 1) {
+        if (backup.schemaVersion !== 1 && backup.schemaVersion !== 2) {
           alert("지원하지 않는 백업 파일 버전입니다.");
           bossBackupFileInput.value = "";
           return;
@@ -1935,6 +2179,58 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // 6. Restore data
         characters = backup.data.characters;
+
+        // Restore weeklyActualRecords based on schemaVersion
+        if (backup.schemaVersion === 2) {
+          if (backup.data.weeklyActualRecords && typeof backup.data.weeklyActualRecords === "object") {
+            const cleaned = {};
+            Object.keys(backup.data.weeklyActualRecords).forEach(key => {
+              const record = backup.data.weeklyActualRecords[key];
+              if (record && typeof record === "object") {
+                const cleanRecord = {
+                  schemaVersion: typeof record.schemaVersion === "number" ? record.schemaVersion : 1,
+                  weekKey: typeof record.weekKey === "string" ? record.weekKey : key,
+                  monthKey: typeof record.monthKey === "string" ? record.monthKey : "",
+                  weekLabel: typeof record.weekLabel === "string" ? record.weekLabel : "",
+                  startKstDate: typeof record.startKstDate === "string" ? record.startKstDate : "",
+                  endKstDate: typeof record.endKstDate === "string" ? record.endKstDate : "",
+                  completedCharacters: record.completedCharacters && typeof record.completedCharacters === "object" ? record.completedCharacters : {}
+                };
+
+                // Validate manualActualMeso
+                if (record.manualActualMeso !== undefined) {
+                  if (typeof record.manualActualMeso === "number" && record.manualActualMeso >= 0 && !isNaN(record.manualActualMeso)) {
+                    cleanRecord.manualActualMeso = record.manualActualMeso;
+                  }
+                }
+
+                // Validate manualCrystalCount
+                if (record.manualCrystalCount !== undefined) {
+                  if (typeof record.manualCrystalCount === "number" && record.manualCrystalCount >= 0 && !isNaN(record.manualCrystalCount)) {
+                    cleanRecord.manualCrystalCount = record.manualCrystalCount;
+                  } else if (record.manualCrystalCount === null) {
+                    cleanRecord.manualCrystalCount = null;
+                  }
+                }
+
+                // Validate manualNote / manualUpdatedAt
+                if (typeof record.manualNote === "string") {
+                  cleanRecord.manualNote = record.manualNote;
+                }
+                if (typeof record.manualUpdatedAt === "string") {
+                  cleanRecord.manualUpdatedAt = record.manualUpdatedAt;
+                }
+
+                cleaned[key] = cleanRecord;
+              }
+            });
+            weeklyActualRecords = cleaned;
+          } else {
+            weeklyActualRecords = {};
+          }
+        } else {
+          weeklyActualRecords = {};
+        }
 
         // 7. Normalization & migration & cleanup
         const currentMonthKey = getKstMonthKey();
@@ -2046,17 +2342,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Copy active character template
   function copyActiveCharacter() {
     // Save current active character name/job text inputs before copy if not empty
-    if (activeCharacterId) {
-      const name = charNameInput.value.trim();
-      const job = charJobInput.value.trim();
-      if (name) {
-        const char = getActiveCharacter();
-        if (char) {
-          char.name = name;
-          char.job = job;
-        }
-      }
-    }
+    saveActiveCharacterEdits();
     saveState();
 
     const activeChar = getActiveCharacter();
@@ -2211,6 +2497,336 @@ document.addEventListener("DOMContentLoaded", () => {
       const isHidden = bossBackupHelpPanel.hidden;
       bossBackupHelpPanel.hidden = !isHidden;
       btnBossBackupHelp.setAttribute("aria-expanded", String(isHidden));
+    });
+  }
+
+  // Get current KST date parts
+  function getCurrentKstDateParts() {
+    const formatter = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Seoul",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    });
+
+    const parts = formatter.formatToParts(new Date());
+    const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+
+    return {
+      year: Number(values.year),
+      month: Number(values.month),
+      day: Number(values.day)
+    };
+  }
+
+  // Parse Korean Meso Input
+  function parseKoreanMesoInput(input) {
+    if (typeof input !== "string") return null;
+    let clean = input.replace(/,/g, "").replace(/\s+/g, "").replace(/메소/g, "").trim();
+    if (!clean) return null;
+
+    // Check if it's a raw integer/float without units
+    if (/^\d+(\.\d+)?$/.test(clean)) {
+      const val = parseFloat(clean);
+      return isNaN(val) || val < 0 ? null : Math.floor(val);
+    }
+
+    let eokVal = 0;
+    let manVal = 0;
+
+    const eokMatch = clean.match(/^(\d+(?:\.\d+)?)억/);
+    if (eokMatch) {
+      eokVal = parseFloat(eokMatch[1]) * 100000000;
+      clean = clean.substring(eokMatch[0].length);
+    }
+
+    const manMatch = clean.match(/^(\d+(?:\.\d+)?)만/);
+    if (manMatch) {
+      manVal = parseFloat(manMatch[1]) * 10000;
+      clean = clean.substring(manMatch[0].length);
+    }
+
+    const total = Math.floor(eokVal + manVal);
+    if (isNaN(total) || total < 0) return null;
+
+    if (clean.trim()) {
+      if (/^\d+$/.test(clean.trim())) {
+        const rem = parseInt(clean.trim(), 10);
+        if (!isNaN(rem)) {
+          return total + rem;
+        }
+      }
+      return null;
+    }
+
+    return total;
+  }
+
+  // Edit Weekly Actual Income Flow
+  function editWeeklyActualIncome(weekKey) {
+    const record = weeklyActualRecords[weekKey];
+    let initialMesoText = "";
+    if (record && typeof record.manualActualMeso === "number") {
+      initialMesoText = formatMesoKorean(record.manualActualMeso);
+    }
+
+    let promptMsg = "";
+    if (initialMesoText) {
+      promptMsg = `현재 수동 입력: ${initialMesoText}\n새 실제 수익을 입력하세요.\n수동 입력을 삭제하려면 "삭제"라고 입력하세요.`;
+    } else {
+      promptMsg = `실제 수익을 입력하세요. 예: 48억, 48억 3000만, 4800000000`;
+    }
+
+    const userInput = window.prompt(promptMsg);
+    if (userInput === null) {
+      return; // Cancelled
+    }
+
+    const trimmedInput = userInput.trim();
+    if (trimmedInput === "") {
+      return; // Empty input, do nothing
+    }
+
+    if (trimmedInput === "삭제") {
+      if (record) {
+        delete record.manualActualMeso;
+        delete record.manualCrystalCount;
+        delete record.manualNote;
+        delete record.manualUpdatedAt;
+
+        // If no completed characters snapshot exists, delete the empty record entirely
+        if (!record.completedCharacters || Object.keys(record.completedCharacters).length === 0) {
+          delete weeklyActualRecords[weekKey];
+        }
+        
+        saveState();
+        updateUI();
+      }
+      return;
+    }
+
+    const parsedMeso = parseKoreanMesoInput(trimmedInput);
+    if (parsedMeso === null) {
+      alert("수익 입력 형식을 확인해 주세요. 예: 48억, 48억 3000만, 4800000000");
+      return;
+    }
+
+    // Save manual record
+    if (!weeklyActualRecords[weekKey]) {
+      const parts = weekKey.split("-");
+      const month = parseInt(parts[1], 10);
+      const weekNum = parseInt(parts[2].replace("W", ""), 10);
+      const weekLabel = `${month}월 ${weekNum}주차`;
+
+      weeklyActualRecords[weekKey] = {
+        schemaVersion: 1,
+        weekKey: weekKey,
+        monthKey: `${parts[0]}-${parts[1]}`,
+        weekLabel: weekLabel,
+        startKstDate: "",
+        endKstDate: "",
+        completedCharacters: {}
+      };
+    }
+
+    const entry = weeklyActualRecords[weekKey];
+    entry.manualActualMeso = parsedMeso;
+    entry.manualCrystalCount = null;
+    entry.manualNote = "수동 입력";
+    entry.manualUpdatedAt = new Date().toISOString();
+
+    saveState();
+    updateUI();
+  }
+
+  // Render Previous Week actual summary
+  function renderPrevWeekSummary() {
+    const now = new Date();
+    const prevWeekPeriod = getKstWeeklyPeriod(new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000));
+    const prevRecord = weeklyActualRecords[prevWeekPeriod.weekKey];
+
+    let totals = { crystalCount: 0, actualMeso: 0, isManual: false };
+    if (prevRecord && (Object.keys(prevRecord.completedCharacters || {}).length > 0 || typeof prevRecord.manualActualMeso === "number")) {
+      totals = getWeeklyActualRecordTotals(prevRecord);
+    }
+    const percentage = totals.crystalCount === null ? 0 : Math.min((totals.crystalCount / WEEKLY_CRYSTAL_LIMIT) * 100, 100);
+
+    if (previousWeekActualSaleLabelEl) {
+      previousWeekActualSaleLabelEl.textContent = `${prevWeekPeriod.weekLabel} (저번주) 판매 개수 (전체)`;
+    }
+    if (previousWeekActualCrystalCountEl) {
+      previousWeekActualCrystalCountEl.textContent = totals.crystalCount === null ? "?" : totals.crystalCount;
+    }
+    if (previousWeekActualIncomeEl) {
+      previousWeekActualIncomeEl.textContent = formatMesoKorean(totals.actualMeso).replace(" 메소", "");
+    }
+    if (previousWeekActualProgressEl) {
+      previousWeekActualProgressEl.style.width = `${percentage}%`;
+    }
+  }
+
+  // Render Boss Income Calendar
+  function renderBossIncomeCalendar() {
+    const titleEl = document.getElementById("bossCalendarTitle");
+    const listEl = document.getElementById("weeklyRecordList");
+    if (!titleEl || !listEl) return;
+
+    // Set title
+    titleEl.textContent = `${viewedWeeklyRecordMonth.year}년 ${viewedWeeklyRecordMonth.month}월`;
+
+    listEl.innerHTML = "";
+
+    const currentPeriod = getKstWeeklyPeriod(new Date());
+    const monthStr = String(viewedWeeklyRecordMonth.month).padStart(2, "0");
+
+    for (let w = 1; w <= 5; w++) {
+      const weekKey = `${viewedWeeklyRecordMonth.year}-${monthStr}-W${w}`;
+      const isCurrentWeek = weekKey === currentPeriod.weekKey;
+      
+      const record = weeklyActualRecords[weekKey];
+      const totals = getWeeklyActualRecordTotals(record);
+      const hasRecord = record && (totals.completedCharacterCount > 0 || totals.isManual);
+
+      const row = document.createElement("div");
+      row.className = `weekly-record-row ${hasRecord ? "has-record" : ""}`;
+
+      // Left side: Label (e.g. 3주차 [진행 중])
+      let labelText = `${w}주차`;
+      if (isCurrentWeek) {
+        labelText += ` <span class="weekly-record-muted">[진행 중]</span>`;
+      }
+
+      // Right side: Value (crystal count & Meso)
+      let valueHtml = "";
+      if (hasRecord) {
+        const isExpanded = expandedWeeklyRecordKey === weekKey;
+        let infoStr = "";
+        if (totals.isManual) {
+          const crystalText = totals.crystalCount === null ? "? / 90개" : `${totals.crystalCount} / 90개`;
+          infoStr = `${formatMesoKorean(totals.actualMeso)} · ${crystalText} · 수동 입력`;
+        } else {
+          infoStr = `${formatMesoKorean(totals.actualMeso)} · ${totals.crystalCount} / 90개`;
+        }
+
+        valueHtml = `
+          <div style="display: flex; align-items: center;">
+            <span>${infoStr}</span>
+            <span class="weekly-record-toggle-arrow">${isExpanded ? "▲" : "▼"}</span>
+          </div>
+        `;
+      } else {
+        valueHtml = `<span class="weekly-record-muted">기록이 없습니다.</span>`;
+      }
+
+      row.innerHTML = `
+        <span class="weekly-record-label">${labelText}</span>
+        <div style="display: flex; align-items: center; gap: 8px; margin-left: auto;">
+          <span class="weekly-record-value">${valueHtml}</span>
+          <button type="button" class="weekly-record-edit-button">수정</button>
+        </div>
+      `;
+
+      // Expand/collapse on click if it has a record
+      if (hasRecord) {
+        row.addEventListener("click", () => {
+          if (expandedWeeklyRecordKey === weekKey) {
+            expandedWeeklyRecordKey = null;
+          } else {
+            expandedWeeklyRecordKey = weekKey;
+          }
+          renderBossIncomeCalendar();
+        });
+      }
+
+      // Add edit button click handler
+      const editBtn = row.querySelector(".weekly-record-edit-button");
+      if (editBtn) {
+        editBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          editWeeklyActualIncome(weekKey);
+        });
+      }
+
+      listEl.appendChild(row);
+
+      // Render details if expanded
+      if (hasRecord && expandedWeeklyRecordKey === weekKey) {
+        const detailContainer = document.createElement("div");
+        detailContainer.className = "weekly-record-detail";
+        // Stop clicks from bubbling up to row click listener
+        detailContainer.addEventListener("click", (e) => e.stopPropagation());
+
+        let charRowsHtml = "";
+        const charKeys = Object.keys(record.completedCharacters || {});
+        if (charKeys.length > 0) {
+          charKeys.forEach(charId => {
+            const charSnapshot = record.completedCharacters[charId];
+            if (charSnapshot) {
+              const charName = charSnapshot.name;
+              const charJob = charSnapshot.job || "직업 없음";
+              const cCount = charSnapshot.crystalCount || 0;
+              const aMeso = charSnapshot.actualMeso || 0;
+
+              charRowsHtml += `
+                <div class="weekly-record-character-row">
+                  <span class="weekly-record-char-info" style="font-weight: 800; color: #111827;">${charName} · ${charJob}</span>
+                  <span class="weekly-record-char-value" style="font-weight: 700; color: #4f46e5;">${cCount}개 · ${formatMesoKorean(aMeso)}</span>
+                </div>
+              `;
+            }
+          });
+        } else {
+          charRowsHtml = `<div class="weekly-record-muted" style="text-align: center; padding: 6px 0;">완료 기록 스냅샷이 없습니다.</div>`;
+        }
+
+        detailContainer.innerHTML = `
+          <div class="weekly-record-detail-title">완료 캐릭터</div>
+          <div class="weekly-record-character-list">
+            ${charRowsHtml}
+          </div>
+          <button type="button" class="weekly-record-delete-button">이 주차 기록 삭제</button>
+        `;
+
+        // Safe delete listener
+        const deleteBtn = detailContainer.querySelector(".weekly-record-delete-button");
+        deleteBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (confirm("이 주차의 실제 수익 기록을 삭제할까요?")) {
+            delete weeklyActualRecords[weekKey];
+            expandedWeeklyRecordKey = null;
+            saveState();
+            updateUI();
+          }
+        });
+
+        listEl.appendChild(detailContainer);
+      }
+    }
+  }
+
+  // Calendar toggle behavior
+  const btnBossCalendarToggle = document.getElementById("btnBossCalendarToggle");
+  const bossCalendarBody = document.getElementById("bossCalendarBody");
+
+  if (btnBossCalendarToggle && bossCalendarBody) {
+    btnBossCalendarToggle.addEventListener("click", () => {
+      const shouldOpen = bossCalendarBody.hidden;
+      bossCalendarBody.hidden = !shouldOpen;
+      btnBossCalendarToggle.setAttribute("aria-expanded", String(shouldOpen));
+
+      if (previousWeekActualSummaryEl) {
+        previousWeekActualSummaryEl.hidden = !shouldOpen;
+      }
+
+      const icon = btnBossCalendarToggle.querySelector(".reset-calendar-toggle-icon");
+      if (icon) {
+        icon.textContent = shouldOpen ? "▲" : "▼";
+      }
+
+      if (shouldOpen) {
+        renderPrevWeekSummary();
+        renderBossIncomeCalendar();
+      }
     });
   }
 

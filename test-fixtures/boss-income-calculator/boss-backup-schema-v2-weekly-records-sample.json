@@ -1,0 +1,92 @@
+{
+  "app": "Maple Tools",
+  "tool": "boss-income-calculator",
+  "schemaVersion": 2,
+  "exportedAt": "2026-06-16T12:00:00.000Z",
+  "exportedAtKstLabel": "2026-06-16",
+  "data": {
+    "characters": [
+      {
+        "id": "char-test-a",
+        "name": "테스트 캐릭터 A",
+        "job": "히어로",
+        "selectedBosses": {
+          "weekly:lotus:easy": {
+            "completed": true,
+            "period": "weekly"
+          },
+          "weekly:damien:easy": {
+            "completed": true,
+            "period": "weekly"
+          }
+        },
+        "monthlyRecords": {},
+        "seasonalRecords": {}
+      },
+      {
+        "id": "char-test-b",
+        "name": "테스트 캐릭터 B",
+        "job": "비숍",
+        "selectedBosses": {
+          "weekly:lotus:normal": {
+            "completed": false,
+            "period": "weekly"
+          }
+        },
+        "monthlyRecords": {},
+        "seasonalRecords": {}
+      }
+    ],
+    "activeCharacterId": "char-test-a",
+    "weeklyActualRecords": {
+      "2026-05-W4": {
+        "schemaVersion": 1,
+        "weekKey": "2026-05-W4",
+        "monthKey": "2026-05",
+        "weekLabel": "5월 4주차",
+        "startKstDate": "2026-05-22",
+        "endKstDate": "2026-05-28",
+        "completedCharacters": {},
+        "manualActualMeso": 3500000000,
+        "manualCrystalCount": null,
+        "manualNote": "수동 입력",
+        "manualUpdatedAt": "2026-05-29T12:00:00.000Z"
+      },
+      "2026-06-W1": {
+        "schemaVersion": 1,
+        "weekKey": "2026-06-W1",
+        "monthKey": "2026-06",
+        "weekLabel": "6월 1주차",
+        "startKstDate": "2026-06-05",
+        "endKstDate": "2026-06-11",
+        "completedCharacters": {},
+        "manualActualMeso": 4800000000,
+        "manualCrystalCount": null,
+        "manualNote": "수동 입력",
+        "manualUpdatedAt": "2026-06-12T12:00:00.000Z"
+      },
+      "2026-06-W2": {
+        "schemaVersion": 1,
+        "weekKey": "2026-06-W2",
+        "monthKey": "2026-06",
+        "weekLabel": "6월 2주차",
+        "startKstDate": "2026-06-12",
+        "endKstDate": "2026-06-18",
+        "completedCharacters": {
+          "char-test-a": {
+            "name": "테스트 캐릭터 A",
+            "job": "히어로",
+            "crystalCount": 12,
+            "actualMeso": 1500000000,
+            "completedAt": "2026-06-15T15:30:00.000Z"
+          }
+        }
+      }
+    },
+    "uiPreferences": {
+      "bossOrderMode": "default",
+      "weeklyFilter": "all",
+      "sectionCollapse": {}
+    }
+  }
+}

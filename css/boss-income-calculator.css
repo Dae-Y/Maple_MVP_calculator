@@ -1411,3 +1411,305 @@
     grid-template-columns: 1fr;
   }
 }
+
+.boss-price-version-note {
+  margin: 8px 0 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.45;
+}
+
+/* Compact Calendar inside reset/time card */
+.reset-calendar-compact {
+  grid-column: span 2;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(17, 24, 39, 0.08);
+}
+
+.reset-calendar-toggle {
+  width: 100%;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(124, 58, 237, 0.07);
+  color: #111827;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 900;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  box-shadow: none;
+  transition: all 0.2s ease;
+}
+
+.reset-calendar-toggle:hover,
+.reset-calendar-toggle:focus-visible {
+  background: rgba(124, 58, 237, 0.12);
+  outline: none;
+}
+
+.reset-calendar-body {
+  margin-top: 8px;
+}
+
+.reset-calendar-title {
+  margin-bottom: 6px;
+  color: #111827;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+/* Weekly Record list & calendar styling inside reset/time card */
+.weekly-record-summary {
+  margin-top: 8px;
+  padding: 9px 10px;
+  border-radius: 12px;
+  background: rgba(17, 24, 39, 0.035);
+  text-align: left;
+}
+
+.weekly-record-prev-label {
+  font-size: 0.82rem;
+  font-weight: 900;
+  color: #111827;
+  text-align: left;
+  margin-top: 4px;
+}
+
+.weekly-record-month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 14px 0 8px;
+}
+
+.weekly-record-month-button {
+  border: 0;
+  border-radius: 999px;
+  background: rgba(124, 58, 237, 0.08);
+  color: #4f46e5;
+  font-weight: 900;
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  box-shadow: none;
+  transition: all 0.2s ease;
+}
+
+.weekly-record-month-button:hover {
+  background: rgba(124, 58, 237, 0.15);
+}
+
+.weekly-record-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 0;
+  border-top: 1px solid rgba(17, 24, 39, 0.07);
+}
+
+.weekly-record-row:first-child {
+  border-top: 0;
+}
+
+.weekly-record-label {
+  font-weight: 900;
+  color: #111827;
+  font-size: 0.78rem;
+}
+
+.weekly-record-value {
+  font-weight: 900;
+  color: #4f46e5;
+  text-align: right;
+  font-size: 0.78rem;
+}
+
+.weekly-record-muted {
+  color: #6b7280;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.reset-calendar-note {
+  margin: 8px 0 0;
+  color: #6b7280;
+  font-size: 0.68rem;
+  line-height: 1.4;
+  text-align: left;
+}
+
+/* Character card complete checkbox styling */
+.char-card-actions {
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+  margin-left: auto;
+}
+
+.character-complete-button {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  border: 1px solid rgba(34, 197, 94, 0.45);
+  background: rgba(34, 197, 94, 0.08);
+  color: #15803d;
+  font-weight: 900;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  padding: 0;
+  box-shadow: none;
+  font-size: 13px;
+}
+
+.character-complete-button:hover {
+  background: rgba(34, 197, 94, 0.14);
+}
+
+.character-complete-button.is-active {
+  background: #22c55e;
+  border-color: #22c55e;
+  color: white;
+}
+
+.character-card.is-week-completed {
+  border-color: rgba(34, 197, 94, 0.75) !important;
+  background: rgba(34, 197, 94, 0.06) !important;
+}
+
+.weekly-record-row.has-record {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.weekly-record-row.has-record:hover {
+  background-color: rgba(17, 24, 39, 0.02);
+}
+
+.weekly-record-detail {
+  margin: 4px 0 10px;
+  padding: 9px 10px;
+  border-radius: 12px;
+  background: rgba(17, 24, 39, 0.03);
+  border: 1px solid rgba(17, 24, 39, 0.06);
+}
+
+.weekly-record-detail-title {
+  font-size: 0.74rem;
+  font-weight: 900;
+  color: #111827;
+  margin-bottom: 6px;
+  text-align: left;
+}
+
+.weekly-record-character-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.74rem;
+  padding: 5px 0;
+  border-top: 1px solid rgba(17, 24, 39, 0.06);
+}
+
+.weekly-record-character-row:first-of-type {
+  border-top: 0;
+}
+
+.weekly-record-toggle-arrow {
+  margin-left: 6px;
+  display: inline-block;
+  font-size: 0.65rem;
+  color: #6b7280;
+  transition: transform 0.2s;
+}
+
+.weekly-record-delete-button {
+  margin-top: 8px;
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.06);
+  color: #b91c1c;
+  font-family: inherit;
+  font-weight: 900;
+  padding: 7px 10px;
+  cursor: pointer;
+  font-size: 0.74rem;
+  transition: all 0.2s ease;
+}
+
+.weekly-record-delete-button:hover {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.weekly-actual-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(17, 24, 39, 0.1);
+  overflow: hidden;
+  margin-top: 4px;
+  width: 100%;
+}
+
+.weekly-actual-progress-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: inherit;
+  background: #7c3aed;
+  transition: width 0.3s ease;
+}
+
+.summary-section + .summary-section {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(17, 24, 39, 0.08);
+}
+
+.summary-progress-fill-actual {
+  background: linear-gradient(90deg, #22c55e, #14b8a6) !important;
+}
+
+#previousWeekActualSummary[hidden] {
+  display: none !important;
+}
+
+#previousWeekActualSummary[hidden] + .summary-section-current {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  border-top: none !important;
+}
+
+.weekly-record-edit-button {
+  background: rgba(124, 58, 237, 0.08);
+  border: 0;
+  border-radius: 6px;
+  color: #4f46e5;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: none;
+}
+
+.weekly-record-edit-button:hover {
+  background: rgba(124, 58, 237, 0.15);
+}

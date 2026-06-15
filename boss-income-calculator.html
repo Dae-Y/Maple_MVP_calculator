@@ -59,21 +59,47 @@
       <!-- Summary and warnings -->
       <section class="boss-dashboard">
         <div class="boss-summary-card boss-summary-card--compact">
-          <div class="boss-summary-grid-left">
-            <div class="boss-summary-item">
-              <span class="boss-overview-label">주간 판매 개수 (전체)</span>
-              <strong class="boss-overview-value"><span id="crystalCount">0</span> / 90 개</strong>
+          <!-- Previous Week Actual Summary Section -->
+          <div id="previousWeekActualSummary" class="summary-section summary-section-previous" hidden>
+            <div class="boss-summary-grid-left">
+              <div class="boss-summary-item">
+                <span id="previousWeekActualSaleLabel" class="boss-overview-label">- (저번주) 판매 개수 (전체)</span>
+                <strong class="boss-overview-value"><span id="previousWeekActualCrystalCount">0</span> / 90 개</strong>
+              </div>
+              <div class="boss-summary-item">
+                <span class="boss-overview-label">실제 수익 (전체)</span>
+                <strong class="boss-overview-value" style="color: #16a34a !important;"><span id="previousWeekActualIncome">0</span> 메소</strong>
+              </div>
             </div>
-            <div class="boss-summary-item">
-              <span class="boss-overview-label">예상 수익 (전체)</span>
-              <strong class="boss-overview-value boss-total-meso"><span id="totalMeso">0</span> 메소</strong>
+            <div class="boss-limit-meter-container" style="margin-top: 4px;">
+              <div class="boss-limit-meter">
+                <div id="previousWeekActualProgress" class="boss-limit-meter-bar summary-progress-fill-actual"></div>
+              </div>
             </div>
           </div>
-          <div class="boss-limit-meter-container">
-            <div class="boss-limit-meter">
-              <div id="limitMeterBar" class="boss-limit-meter-bar"></div>
+
+          <!-- Current Week Expected Summary Section -->
+          <div class="summary-section summary-section-current">
+            <div class="boss-summary-grid-left">
+              <div class="boss-summary-item">
+                <span id="weeklySaleCountLabel" class="boss-overview-label">주간 판매 개수 (전체)</span>
+                <strong class="boss-overview-value"><span id="crystalCount">0</span> / 90 개</strong>
+              </div>
+              <div class="boss-summary-item">
+                <span class="boss-overview-label">예상 수익 (전체)</span>
+                <strong class="boss-overview-value boss-total-meso"><span id="totalMeso">0</span> 메소</strong>
+              </div>
+            </div>
+            <div class="boss-limit-meter-container" style="margin-top: 4px;">
+              <div class="boss-limit-meter">
+                <div id="limitMeterBar" class="boss-limit-meter-bar"></div>
+              </div>
             </div>
           </div>
+
+          <p class="boss-price-version-note">
+            결정석 가격 기준: KMST 1.2.202 선반영 · 2026.06.13 업데이트
+          </p>
           <!-- Warning Area -->
           <div id="weeklyLimitWarning"></div>
         </div>
@@ -86,6 +112,35 @@
           <div class="boss-time-item">
             <span class="boss-overview-label">주간보스 초기화까지</span>
             <strong id="bossResetCountdown" class="countdown-display">-</strong>
+          </div>
+          <div class="reset-calendar-compact">
+            <button
+              type="button"
+              class="reset-calendar-toggle"
+              id="btnBossCalendarToggle"
+              aria-expanded="false"
+              aria-controls="bossCalendarBody"
+            >
+              <span>주차별 수익 기록</span>
+              <span class="reset-calendar-toggle-icon" aria-hidden="true">▼</span>
+            </button>
+
+            <div id="bossCalendarBody" class="reset-calendar-body" hidden>
+
+              <!-- Month Navigation -->
+              <div class="weekly-record-month-nav">
+                <button type="button" class="weekly-record-month-button" id="btnPrevMonth">‹</button>
+                <span class="reset-calendar-title" id="bossCalendarTitle"></span>
+                <button type="button" class="weekly-record-month-button" id="btnNextMonth">›</button>
+              </div>
+
+              <!-- Weekly list -->
+              <div id="weeklyRecordList"></div>
+
+              <p class="reset-calendar-note">
+                완료 체크한 캐릭터의 실제 수익이 주차별로 저장됩니다.
+              </p>
+            </div>
           </div>
         </div>
       </section>
