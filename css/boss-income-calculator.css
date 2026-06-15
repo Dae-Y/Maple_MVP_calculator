@@ -1360,3 +1360,54 @@
 .backup-help-panel p + p {
   margin-top: 6px;
 }
+
+/* Character Copy and Paste Actions Styling */
+.character-copy-action-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 2px;
+  margin-bottom: 14px;
+}
+
+.character-copy-action-button {
+  width: 100%;
+  padding: 8px;
+  border-radius: 12px;
+  font-family: inherit;
+  font-weight: 900;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.character-copy-action-button.secondary {
+  background: white;
+  border: 1px solid #d1d5db;
+  color: #374151;
+}
+
+.character-copy-action-button.secondary:hover {
+  background: #f9fafb;
+  border-color: #cbd5e1;
+  transform: translateY(-0.5px);
+}
+
+.character-copy-action-button.primary {
+  background: #f5f3ff;
+  border: 1px solid #ddd6fe;
+  color: #6d28d9;
+}
+
+.character-copy-action-button.primary:hover {
+  background: #ede9fe;
+  border-color: #c4b5fd;
+  transform: translateY(-0.5px);
+}
+
+@media (max-width: 480px) {
+  .character-copy-action-row {
+    grid-template-columns: 1fr;
+  }
+}

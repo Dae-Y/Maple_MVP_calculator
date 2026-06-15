@@ -7,6 +7,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const BOSS_ORDER_MODE_KEY = "maple_tools_boss_income_order_mode_v1";
   const BOSS_WEEKLY_FILTER_KEY = "maple_tools_boss_income_weekly_filter_v1";
   const BOSS_BACKUP_SCHEMA_VERSION = 1;
+  const BOSS_CHARACTER_COPY_TEMPLATE_KEY = "mapleToolsBossCharacterCopyTemplateV1";
+  const BOSS_CHARACTER_COPY_TEMPLATE_VERSION = 1;
 
   const BELOW_LOTUS_DAMIEN_WEEKLY_BOSS_IDS = [
     "zaqqum",
@@ -2039,6 +2041,165 @@ document.addEventListener("DOMContentLoaded", () => {
       bossBackupFileInput.click();
     });
     bossBackupFileInput.addEventListener("change", importBossBackup);
+  }
+
+  // Copy active character template
+  function copyActiveCharacter() {
+    // Save current active character name/job text inputs before copy if not empty
+    if (activeCharacterId) {
+      const name = charNameInput.value.trim();
+      const job = charJobInput.value.trim();
+      if (name) {
+        const char = getActiveCharacter();
+        if (char) {
+          char.name = name;
+          char.job = job;
+        }
+      }
+    }
+    saveState();
+
+    const activeChar = getActiveCharacter();
+    if (!activeChar) {
+      alert("먼저 복사할 캐릭터를 선택해 주세요.");
+      return;
+    }
+
+    // Filter and copy only weekly selected bosses
+    const weeklyBossesList = [];
+    if (activeChar.selectedBosses) {
+      Object.keys(activeChar.selectedBosses).forEach(key => {
+        const selection = activeChar.selectedBosses[key];
+        const period = selection.period || key.split(":")[0];
+        if (period === "weekly") {
+          weeklyBossesList.push({
+            key: key,
+            bossId: selection.bossId || key.split(":")[1],
+            period: period,
+            difficultyId: selection.difficultyId,
+            partySize: selection.partySize || 1
+          });
+        }
+      });
+    }
+
+    const template = {
+      tool: "boss-income-calculator",
+      type: "character-copy-template",
+      schemaVersion: BOSS_CHARACTER_COPY_TEMPLATE_VERSION,
+      copiedAt: new Date().toISOString(),
+      sourceName: activeChar.name,
+      data: {
+        job: activeChar.job || "",
+        selectedBosses: weeklyBossesList
+      }
+    };
+
+    try {
+      localStorage.setItem(BOSS_CHARACTER_COPY_TEMPLATE_KEY, JSON.stringify(template));
+      alert(`${activeChar.name} 보스 설정을 복사했습니다.`);
+    } catch (e) {
+      console.error(e);
+      alert("캐릭터 복사 중 오류가 발생했습니다.");
+    }
+  }
+
+  // Paste copied character template
+  function pasteCopiedCharacter() {
+    let templateStr = null;
+    try {
+      templateStr = localStorage.getItem(BOSS_CHARACTER_COPY_TEMPLATE_KEY);
+    } catch (e) {
+      console.error(e);
+    }
+
+    if (!templateStr) {
+      alert("먼저 캐릭터 복사를 해주세요.");
+      return;
+    }
+
+    let template = null;
+    try {
+      template = JSON.parse(templateStr);
+    } catch (e) {
+      console.error(e);
+    }
+
+    // Validation
+    if (!template || typeof template !== "object" || 
+        template.tool !== "boss-income-calculator" || 
+        template.type !== "character-copy-template" || 
+        template.schemaVersion !== 1 || 
+        !template.data || 
+        !Array.isArray(template.data.selectedBosses)) {
+      alert("복사된 캐릭터 설정을 불러올 수 없습니다. 다시 복사해 주세요.");
+      return;
+    }
+
+    // Generate unique name
+    const baseName = `${template.sourceName} 복사본`;
+    let uniqueName = baseName;
+    let counter = 2;
+    while (characters.some(c => c.name === uniqueName)) {
+      uniqueName = `${baseName} ${counter}`;
+      counter++;
+    }
+
+    // Deep copy weekly selected bosses from template
+    const selectedBossesObj = {};
+    template.data.selectedBosses.forEach(item => {
+      const key = item.key || `${item.period}:${item.bossId}`;
+      selectedBossesObj[key] = {
+        bossId: item.bossId,
+        period: item.period,
+        difficultyId: item.difficultyId,
+        partySize: item.partySize
+      };
+    });
+
+    const newChar = {
+      id: "char_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5),
+      name: uniqueName,
+      job: template.data.job || "",
+      avatar: null,
+      selectedBosses: selectedBossesObj,
+      monthlyRecords: {},
+      seasonalRecords: {}
+    };
+
+    // Migrate data
+    migrateCharacterData(newChar);
+
+    // Save state
+    characters.push(newChar);
+    activeCharacterId = newChar.id;
+    charNameInput.value = newChar.name;
+    charJobInput.value = newChar.job;
+    saveState();
+
+    // Re-render
+    populateUiStates();
+    updateUI();
+
+    // Focus input
+    if (charNameInput) {
+      charNameInput.focus();
+      charNameInput.select();
+    }
+
+    alert("복사본을 추가했습니다. 캐릭터명과 직업을 수정해 주세요.");
+  }
+
+  // Query character copy/paste buttons
+  const btnCopyActiveCharacter = document.getElementById("btnCopyActiveCharacter");
+  const btnPasteCopiedCharacter = document.getElementById("btnPasteCopiedCharacter");
+
+  if (btnCopyActiveCharacter) {
+    btnCopyActiveCharacter.addEventListener("click", copyActiveCharacter);
+  }
+
+  if (btnPasteCopiedCharacter) {
+    btnPasteCopiedCharacter.addEventListener("click", pasteCopiedCharacter);
   }
 
   // Help button toggle behavior
