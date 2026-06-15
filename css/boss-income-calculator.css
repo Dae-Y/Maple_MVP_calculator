@@ -1276,3 +1276,87 @@
 .seasonal-completion-status.is-empty {
   color: #9ca3af;
 }
+
+/* Backup and Restore Action Styling */
+.backup-action-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.backup-action-button {
+  width: 100%;
+  padding: 10px;
+  font-size: 13.5px;
+  border-radius: 12px;
+  font-family: inherit;
+  font-weight: 900;
+  cursor: pointer;
+  background: white;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  transition: all 0.2s ease;
+}
+
+.backup-action-button:hover {
+  background: #f9fafb;
+  border-color: #cbd5e1;
+  transform: translateY(-0.5px);
+}
+
+#btnImportBossBackup {
+  background: #f5f3ff;
+  border: 1px solid #ddd6fe;
+  color: #6d28d9;
+}
+
+#btnImportBossBackup:hover {
+  background: #ede9fe;
+  border-color: #c4b5fd;
+}
+
+.backup-help-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(124, 58, 237, 0.35);
+  background: rgba(124, 58, 237, 0.08);
+  color: #6d28d9;
+  font-weight: 900;
+  cursor: pointer;
+  font-size: 11px;
+  margin-left: 4px;
+  vertical-align: middle;
+  line-height: 1;
+  padding: 0;
+  box-shadow: none;
+}
+
+.backup-help-button:hover,
+.backup-help-button:focus-visible {
+  background: rgba(124, 58, 237, 0.14);
+  outline: none;
+}
+
+.backup-help-panel {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(124, 58, 237, 0.07);
+  border: 1px solid rgba(124, 58, 237, 0.16);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: #4b5563;
+  text-align: left;
+}
+
+.backup-help-panel p {
+  margin: 0;
+}
+
+.backup-help-panel p + p {
+  margin-top: 6px;
+}

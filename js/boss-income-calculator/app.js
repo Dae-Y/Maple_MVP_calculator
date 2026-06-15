@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const BOSS_SECTION_COLLAPSE_KEY = "maple_tools_boss_income_section_collapse_v1";
   const BOSS_ORDER_MODE_KEY = "maple_tools_boss_income_order_mode_v1";
   const BOSS_WEEKLY_FILTER_KEY = "maple_tools_boss_income_weekly_filter_v1";
+  const BOSS_BACKUP_SCHEMA_VERSION = 1;
 
   const BELOW_LOTUS_DAMIEN_WEEKLY_BOSS_IDS = [
     "zaqqum",
@@ -1796,6 +1797,260 @@ document.addEventListener("DOMContentLoaded", () => {
     if (countdownEl) {
       countdownEl.textContent = getResetRemainingText(now, nextThursday);
     }
+  }
+
+  // JSON Backup export download helper
+  function downloadJson(filename, data) {
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json"
+    });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = filename;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  // Export Boss Backup
+  function exportBossBackup() {
+    // Save current character name/job text inputs before export if not empty
+    if (activeCharacterId) {
+      const name = charNameInput.value.trim();
+      const job = charJobInput.value.trim();
+      if (name) {
+        const char = getActiveCharacter();
+        if (char) {
+          char.name = name;
+          char.job = job;
+        }
+      }
+    }
+    saveState();
+
+    const now = new Date();
+    const kstIsoString = getKstIsoString(now);
+    const kstDateLabel = kstIsoString.substring(0, 10);
+    
+    const backupData = {
+      app: "Maple Tools",
+      tool: "boss-income-calculator",
+      schemaVersion: BOSS_BACKUP_SCHEMA_VERSION,
+      exportedAt: now.toISOString(),
+      exportedAtKstLabel: kstDateLabel,
+      data: {
+        characters: characters,
+        activeCharacterId: activeCharacterId,
+        uiPreferences: {
+          bossOrderMode: bossOrderMode,
+          weeklyFilter: weeklyFilterState,
+          sectionCollapse: sectionCollapseStates
+        }
+      }
+    };
+
+    const filename = `maple-tools-boss-backup-${kstDateLabel}.json`;
+    downloadJson(filename, backupData);
+  }
+
+  // Import Boss Backup
+  function importBossBackup(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const backup = JSON.parse(e.target.result);
+        
+        // 1. Base validation
+        if (!backup || typeof backup !== "object" || backup.app !== "Maple Tools" || backup.tool !== "boss-income-calculator") {
+          alert("올바른 보스 수익 계산기 백업 파일이 아닙니다.");
+          bossBackupFileInput.value = "";
+          return;
+        }
+        
+        // 2. Schema version validation
+        if (backup.schemaVersion !== 1) {
+          alert("지원하지 않는 백업 파일 버전입니다.");
+          bossBackupFileInput.value = "";
+          return;
+        }
+        
+        // 3. Characters array validation
+        if (!backup.data || !Array.isArray(backup.data.characters)) {
+          alert("올바른 보스 수익 계산기 백업 파일이 아닙니다.");
+          bossBackupFileInput.value = "";
+          return;
+        }
+
+        // 4. Character object validation to prevent crashes
+        for (const char of backup.data.characters) {
+          if (!char || typeof char !== "object") {
+            alert("올바른 보스 수익 계산기 백업 파일이 아닙니다.");
+            bossBackupFileInput.value = "";
+            return;
+          }
+          if (typeof char.id !== "string" || !char.id) {
+            alert("올바른 보스 수익 계산기 백업 파일이 아닙니다.");
+            bossBackupFileInput.value = "";
+            return;
+          }
+          if (typeof char.name !== "string" || !char.name.trim()) {
+            alert("올바른 보스 수익 계산기 백업 파일이 아닙니다.");
+            bossBackupFileInput.value = "";
+            return;
+          }
+          if (char.job !== undefined && typeof char.job !== "string") {
+            alert("올바른 보스 수익 계산기 백업 파일이 아닙니다.");
+            bossBackupFileInput.value = "";
+            return;
+          }
+          if (char.selectedBosses !== undefined && (typeof char.selectedBosses !== "object" || char.selectedBosses === null)) {
+            alert("올바른 보스 수익 계산기 백업 파일이 아닙니다.");
+            bossBackupFileInput.value = "";
+            return;
+          }
+          if (char.monthlyRecords !== undefined && (typeof char.monthlyRecords !== "object" || char.monthlyRecords === null)) {
+            alert("올바른 보스 수익 계산기 백업 파일이 아닙니다.");
+            bossBackupFileInput.value = "";
+            return;
+          }
+          if (char.seasonalRecords !== undefined && (typeof char.seasonalRecords !== "object" || char.seasonalRecords === null)) {
+            alert("올바른 보스 수익 계산기 백업 파일이 아닙니다.");
+            bossBackupFileInput.value = "";
+            return;
+          }
+        }
+
+        // 5. Ask for confirmation
+        if (!confirm("현재 브라우저에 저장된 보스 계산기 기록을 백업 파일 내용으로 교체할까요?")) {
+          bossBackupFileInput.value = "";
+          return;
+        }
+
+        // 6. Restore data
+        characters = backup.data.characters;
+
+        // 7. Normalization & migration & cleanup
+        const currentMonthKey = getKstMonthKey();
+        characters.forEach(char => {
+          if (!char.selectedBosses) char.selectedBosses = {};
+          if (!char.monthlyRecords) char.monthlyRecords = {};
+          if (!char.seasonalRecords) char.seasonalRecords = {};
+
+          migrateCharacterData(char);
+
+          // Daily/monthly selectedBosses cleanup
+          Object.keys(char.selectedBosses).forEach(key => {
+            const selection = char.selectedBosses[key];
+            if (selection) {
+              const period = selection.period || key.split(":")[0];
+              if (period === "daily" || period === "monthly") {
+                delete char.selectedBosses[key];
+              }
+            }
+          });
+
+          // Expired monthly records cleanup
+          Object.keys(char.monthlyRecords).forEach(key => {
+            const record = char.monthlyRecords[key];
+            if (record && record.monthKey !== currentMonthKey) {
+              delete char.monthlyRecords[key];
+            }
+          });
+        });
+
+        // 8. Restore active character ID
+        const importedActiveId = backup.data.activeCharacterId;
+        if (importedActiveId && characters.some(c => c.id === importedActiveId)) {
+          activeCharacterId = importedActiveId;
+        } else if (characters.length > 0) {
+          activeCharacterId = characters[0].id;
+        } else {
+          activeCharacterId = null;
+        }
+
+        // 9. UI Preferences (with default fallback to protect against crash/missing keys)
+        if (backup.data.uiPreferences) {
+          const prefs = backup.data.uiPreferences;
+          
+          if (prefs.bossOrderMode === "default" || prefs.bossOrderMode === "reverse") {
+            bossOrderMode = prefs.bossOrderMode;
+            localStorage.setItem(BOSS_ORDER_MODE_KEY, bossOrderMode);
+          }
+          
+          if (prefs.weeklyFilter && typeof prefs.weeklyFilter.hideBelowLotusDamien === "boolean") {
+            weeklyFilterState.hideBelowLotusDamien = prefs.weeklyFilter.hideBelowLotusDamien;
+            localStorage.setItem(BOSS_WEEKLY_FILTER_KEY, JSON.stringify(weeklyFilterState));
+            if (hideBelowLotusDamienCheckbox) {
+              hideBelowLotusDamienCheckbox.checked = weeklyFilterState.hideBelowLotusDamien;
+            }
+          }
+          
+          if (prefs.sectionCollapse && typeof prefs.sectionCollapse === "object") {
+            sectionCollapseStates = {
+              ...sectionCollapseStates,
+              ...prefs.sectionCollapse
+            };
+            localStorage.setItem(BOSS_SECTION_COLLAPSE_KEY, JSON.stringify(sectionCollapseStates));
+          }
+        }
+
+        saveState();
+
+        // 10. Sync inputs of restored active character
+        const activeChar = getActiveCharacter();
+        if (activeChar) {
+          charNameInput.value = activeChar.name;
+          charJobInput.value = activeChar.job;
+        } else {
+          charNameInput.value = "";
+          charJobInput.value = "";
+        }
+
+        // 11. Re-render UI
+        populateUiStates();
+        updateUI();
+
+        alert("백업을 불러왔습니다.");
+      } catch (err) {
+        console.error(err);
+        alert("파일 읽기 또는 파싱 중 오류가 발생했습니다.");
+      }
+      bossBackupFileInput.value = "";
+    };
+    reader.readAsText(file);
+  }
+
+  // Query backup/restore buttons
+  const btnExportBossBackup = document.getElementById("btnExportBossBackup");
+  const btnImportBossBackup = document.getElementById("btnImportBossBackup");
+  const bossBackupFileInput = document.getElementById("bossBackupFileInput");
+
+  if (btnExportBossBackup) {
+    btnExportBossBackup.addEventListener("click", exportBossBackup);
+  }
+
+  if (btnImportBossBackup && bossBackupFileInput) {
+    btnImportBossBackup.addEventListener("click", () => {
+      bossBackupFileInput.click();
+    });
+    bossBackupFileInput.addEventListener("change", importBossBackup);
+  }
+
+  // Help button toggle behavior
+  const btnBossBackupHelp = document.getElementById("btnBossBackupHelp");
+  const bossBackupHelpPanel = document.getElementById("bossBackupHelpPanel");
+
+  if (btnBossBackupHelp && bossBackupHelpPanel) {
+    btnBossBackupHelp.addEventListener("click", () => {
+      const isHidden = bossBackupHelpPanel.hidden;
+      bossBackupHelpPanel.hidden = !isHidden;
+      btnBossBackupHelp.setAttribute("aria-expanded", String(isHidden));
+    });
   }
 
   // Async load prices, then init UI

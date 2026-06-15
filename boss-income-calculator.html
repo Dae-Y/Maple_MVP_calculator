@@ -202,10 +202,20 @@
           <div class="summary-actions">
             <button id="resetCharBtn" class="secondary" type="button">선택 캐릭터 초기화</button>
             <button id="saveCharacterButton" class="btn-save-char" type="button">저장</button>
+            <div class="backup-action-row">
+              <button id="btnExportBossBackup" class="backup-action-button" type="button">백업 다운로드</button>
+              <button id="btnImportBossBackup" class="backup-action-button" type="button">백업 불러오기</button>
+            </div>
+            <input id="bossBackupFileInput" type="file" accept="application/json,.json" hidden />
           </div>
           <div class="storage-notice">
-            기록은 현재 브라우저에 저장됩니다.<br />
-            사이트 데이터 캐시를 삭제하면 기록이 사라질 수 있습니다.
+            기록은 현재 브라우저에 저장됩니다. <button type="button" class="backup-help-button" id="btnBossBackupHelp" aria-expanded="false" aria-controls="bossBackupHelpPanel" title="백업 도움말">?</button><br />
+            사이트 데이터/저장공간을 삭제하면 기록이 사라질 수 있습니다.
+          </div>
+          <div id="bossBackupHelpPanel" class="backup-help-panel" hidden>
+            <p>캐릭터와 보스 기록은 현재 브라우저에 저장됩니다.</p>
+            <p>백업 다운로드로 JSON 파일을 저장해두면, 사이트 데이터가 삭제되거나 다른 기기에서 사용할 때 백업 불러오기로 다시 복원할 수 있습니다.</p>
+            <p>서버나 DB에는 저장하지 않습니다.</p>
           </div>
         </section>
 
