@@ -296,6 +296,17 @@ const BOSS_DATA = [
     ]
   },
   {
+    id: "bellona",
+    name: "벨로나",
+    icon: "bellona.png",
+    forceType: "authentic",
+    difficulties: [
+      { id: "easy", label: "이지" },
+      { id: "normal", label: "노멀" },
+      { id: "hard", label: "하드" }
+    ]
+  },
+  {
     id: "limbo",
     name: "림보",
     icon: "limbo.png",

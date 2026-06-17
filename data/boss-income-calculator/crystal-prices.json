@@ -129,6 +129,11 @@
       "normal": 625000000,
       "hard": 2678000000
     },
+    "bellona": {
+      "easy": 100000,
+      "normal": 100000,
+      "hard": 100000
+    },
     "limbo": {
       "normal": 1026000000,
       "hard": 2385000000
@@ -273,6 +278,11 @@
       "extreme": "weekly"
     },
     "radiant_malefic_star": {
+      "normal": "weekly",
+      "hard": "weekly"
+    },
+    "bellona": {
+      "easy": "weekly",
       "normal": "weekly",
       "hard": "weekly"
     },
