@@ -134,6 +134,34 @@ function formatMeso(value) {
   return parts.join(" ");
 }
 
+function formatCompactMeso(value) {
+  const rounded = Math.round(value);
+
+  if (rounded === 0) return "0";
+
+  if (rounded >= 100_000_000) {
+    const eokVal = rounded / 100_000_000;
+    const floored = Math.floor(eokVal * 1000) / 1000;
+    const formattedNum = Number(floored.toFixed(3)).toString();
+    return `${formattedNum}억`;
+  }
+
+  if (rounded >= 10_000) {
+    const manVal = rounded / 10_000;
+    const floored = Math.floor(manVal * 1000) / 1000;
+    const formattedNum = Number(floored.toFixed(3)).toString();
+    return `${formattedNum}만`;
+  }
+
+  return formatNumber(rounded);
+}
+
+function renderCompactMesoSpan(value) {
+  const fullText = `${formatMeso(value)} 메소`;
+  const compactText = formatCompactMeso(value);
+  return `<span class="compact-meso-value" title="${fullText}" aria-label="${fullText}">${compactText}</span>`;
+}
+
 function parseNumberInput(value) {
   const cleaned = String(value ?? "").replaceAll(",", "").trim();
   const parsed = Number(cleaned);
@@ -318,7 +346,7 @@ function renderItemRows(items) {
         />
 
         <div class="item-info">
-          <div class="item-name" title="${item.name}">${item.name}</div>
+          <div class="item-name cash-item-name" title="${item.name}">${item.name}</div>
         </div>
 
         <div class="cash-price" title="${formatCash(item.cashPrice)}">${formatCash(item.cashPrice)}</div>
@@ -477,6 +505,7 @@ function saveCalculatorState() {
       remainingToNext: $("remainingToNext").value,
       selectedTargetMvp: $("selectedTargetMvp").value,
       disableMileage: $("disableMileage").checked,
+      includeMileageEfficiencyComparison: $("includeMileageEfficiencyComparison") ? $("includeMileageEfficiencyComparison").checked : false,
     },
 
     auctionInputs: getAuctionInputValues(),
@@ -533,6 +562,9 @@ function applySavedInputs(savedState) {
   if ($("remainingToNext")) $("remainingToNext").value = inputs.remainingToNext ?? 300_000;
   if ($("selectedTargetMvp")) $("selectedTargetMvp").value = inputs.selectedTargetMvp ?? 1_500_000;
   if ($("disableMileage")) $("disableMileage").checked = Boolean(inputs.disableMileage);
+  if ($("includeMileageEfficiencyComparison")) {
+    $("includeMileageEfficiencyComparison").checked = Boolean(inputs.includeMileageEfficiencyComparison);
+  }
 
   if (savedState.auctionInputs) {
     Object.entries(savedState.auctionInputs).forEach(([itemId, value]) => {
@@ -835,8 +867,44 @@ function runSimulation() {
   renderSelectedStrategyPlan("profit");
 }
 
+function setupCollapsibleSection({ buttonId, bodyId, expandedLabel, collapsedLabel }) {
+  const button = $(buttonId);
+  const body = $(bodyId);
+  if (!button || !body) return;
+
+  button.addEventListener("click", () => {
+    const isCollapsed = body.classList.contains("is-collapsed");
+    if (isCollapsed) {
+      body.classList.remove("is-collapsed");
+      button.setAttribute("aria-expanded", "true");
+      button.setAttribute("aria-label", expandedLabel);
+    } else {
+      body.classList.add("is-collapsed");
+      button.setAttribute("aria-expanded", "false");
+      button.setAttribute("aria-label", collapsedLabel);
+    }
+  });
+}
+
+function expandCollapsibleSection({ buttonId, bodyId, expandedLabel }) {
+  const button = $(buttonId);
+  const body = $(bodyId);
+  if (body) {
+    body.classList.remove("is-collapsed");
+  }
+  if (button) {
+    button.setAttribute("aria-expanded", "true");
+    button.setAttribute("aria-label", expandedLabel);
+  }
+}
+
 function renderResults(result) {
   $("resultSection").classList.remove("hidden");
+  expandCollapsibleSection({
+    buttonId: "toggleMvpResultBtn",
+    bodyId: "mvpCalculationResultBody",
+    expandedLabel: "MVP 계산 결과 접기",
+  });
   renderStrategySummary("profit");
 }
 
@@ -979,6 +1047,302 @@ function renderSelectedStrategyPlan(strategy) {
   renderStrategySummarySentence(planResult, strategy);
 }
 
+function calculateBreakEvenSalePrice(costKrw, waterRate, feePercent) {
+  const feeMultiplier = 1 - (feePercent / 100);
+  if (waterRate <= 0 || feeMultiplier <= 0) return 0;
+  return Math.ceil((costKrw / waterRate) * 100_000_000 / feeMultiplier);
+}
+
+function classifyEfficiency(profitKrw) {
+  const rounded = Math.round(profitKrw);
+  if (rounded > 0) {
+    return { key: "profit", label: "흑자", className: "is-profit" };
+  } else if (rounded === 0) {
+    return { key: "break-even", label: "본전", className: "is-break-even" };
+  } else {
+    return { key: "loss", label: "손실", className: "is-loss" };
+  }
+}
+
+function formatEfficiencyProfitText(profitKrw) {
+  const rounded = Math.round(profitKrw);
+  if (rounded > 0) {
+    return `+${formatNumber(rounded)}원 이득`;
+  } else if (rounded === 0) {
+    return `0원 본전`;
+  } else {
+    return `-${formatNumber(Math.abs(rounded))}원 손실`;
+  }
+}
+
+function formatBreakEvenDiffText(expectedSalePrice, breakEvenMeso) {
+  const diff = expectedSalePrice - breakEvenMeso;
+  if (diff > 0) {
+    return `본전보다 ${formatCompactMeso(diff)} 높음`;
+  } else if (diff < 0) {
+    return `본전보다 ${formatCompactMeso(Math.abs(diff))} 낮음`;
+  } else {
+    return `본전과 동일`;
+  }
+}
+
+function calculateItemEfficiency(item, options) {
+  const { expectedSalePrice, waterRate, feePercent } = options;
+  const feeMultiplier = 1 - (feePercent / 100);
+  const grossSaleMeso = expectedSalePrice;
+  const netSaleMeso = grossSaleMeso * feeMultiplier;
+  const recoveredKrw = (netSaleMeso / 100_000_000) * waterRate;
+
+  const cashOnlyCostKrw = item.cashPrice;
+  const cashOnlyProfitKrw = recoveredKrw - cashOnlyCostKrw;
+  const cashOnlyRecoveryRate = cashOnlyCostKrw > 0 ? (recoveredKrw / cashOnlyCostKrw) * 100 : 0;
+  const cashOnlyBreakEvenMeso = calculateBreakEvenSalePrice(cashOnlyCostKrw, waterRate, feePercent);
+  const cashOnlyStatus = classifyEfficiency(cashOnlyProfitKrw);
+
+  let mileageAnalysis = null;
+  if (item.mileageDiscount) {
+    const maxMileageDiscount = Math.floor(item.cashPrice * 0.3);
+    const mileageCashCostKrw = item.cashPrice - maxMileageDiscount;
+    const mileageProfitKrw = recoveredKrw - mileageCashCostKrw;
+    const mileageRecoveryRate = mileageCashCostKrw > 0 ? (recoveredKrw / mileageCashCostKrw) * 100 : 0;
+    const mileageBreakEvenMeso = calculateBreakEvenSalePrice(mileageCashCostKrw, waterRate, feePercent);
+    const mileageStatus = classifyEfficiency(mileageProfitKrw);
+
+    mileageAnalysis = {
+      discountAmount: maxMileageDiscount,
+      mileageCashCostKrw,
+      mileageProfitKrw,
+      mileageRecoveryRate,
+      mileageBreakEvenMeso,
+      mileageStatus,
+    };
+  }
+
+  return {
+    item,
+    expectedSalePrice,
+    grossSaleMeso,
+    netSaleMeso,
+    recoveredKrw,
+    cashOnlyCostKrw,
+    cashOnlyProfitKrw,
+    cashOnlyRecoveryRate,
+    cashOnlyBreakEvenMeso,
+    cashOnlyStatus,
+    mileageAnalysis,
+  };
+}
+
+function renderItemEfficiencyEmptyState(message) {
+  const summaryEl = $("itemEfficiencySummary");
+  const containerEl = $("itemEfficiencyTableContainer");
+
+  if (summaryEl) summaryEl.innerHTML = "";
+  if (containerEl) {
+    containerEl.innerHTML = `
+      <div class="item-efficiency-empty">
+        ${message}
+      </div>
+    `;
+  }
+}
+
+function renderItemEfficiencyResults(results, options) {
+  const { totalCount, validCount, excludedCount, includeMileage } = options;
+  const summaryEl = $("itemEfficiencySummary");
+  const containerEl = $("itemEfficiencyTableContainer");
+
+  const profitItemsCount = results.filter((r) => r.cashOnlyProfitKrw > 0).length;
+  const topResult = results[0];
+
+  const summaryBoxesHtml = `
+    <div class="summary-grid">
+      ${makeSummaryBox("비교 품목", `${validCount}개 ${excludedCount > 0 ? `<small style="font-size:12px;color:#6b7280;">(미입력 ${excludedCount}개 제외)</small>` : ""}`)}
+      ${makeSummaryBox("흑자 품목", `${profitItemsCount}개`)}
+      <div class="summary-box summary-checkbox-card">
+        <div class="summary-label">마일리지 비교</div>
+        <label class="summary-checkbox-row">
+          <input id="includeMileageEfficiencyComparison" type="checkbox" ${includeMileage ? "checked" : ""} />
+          <div>
+            <span>30% 적용 비교</span>
+            <small>적용 가능 품목 최대 30% 할인</small>
+          </div>
+        </label>
+      </div>
+    </div>
+  `;
+
+  let highlightHtml = "";
+  if (topResult) {
+    if (topResult.cashOnlyProfitKrw > 0) {
+      const diffText = formatBreakEvenDiffText(topResult.expectedSalePrice, topResult.cashOnlyBreakEvenMeso).replace("본전보다 ", "");
+      const profitText = formatEfficiencyProfitText(topResult.cashOnlyProfitKrw);
+      highlightHtml = `
+        <div class="item-efficiency-best-item">
+          현재 입력한 시세에서는 <strong>${topResult.item.name}</strong>의 현금 사용 기준 회수율이 가장 높습니다.<br />
+          본전 경매장가보다 약 <strong>${diffText}</strong>, 1회 구매 기준 약 <strong>${profitText}</strong>입니다.
+        </div>
+      `;
+    } else {
+      highlightHtml = `
+        <div class="item-efficiency-best-item">
+          현재 입력한 시세에서는 흑자 품목이 없습니다.<br />
+          그중 <strong>${topResult.item.name}</strong>이 가장 높은 회수율(<strong>${topResult.cashOnlyRecoveryRate.toFixed(2)}%</strong>)을 보입니다.
+        </div>
+      `;
+    }
+  }
+
+  if (summaryEl) {
+    summaryEl.innerHTML = summaryBoxesHtml + highlightHtml;
+  }
+
+  const tableRowsHtml = results.map((res, index) => {
+    const rankText = `${index + 1}위`;
+    const itemCell = `
+      <div class="efficiency-item-cell">
+        <img src="${getIconPath(res.item.icon)}" alt="${res.item.name}" onerror="this.src='${FALLBACK_ICON}'" />
+        <span class="item-efficiency-item-name">${res.item.name}</span>
+      </div>
+    `;
+
+    const expectedSaleCell = renderCompactMesoSpan(res.expectedSalePrice);
+
+    let rateCell = "";
+    let profitCell = "";
+    let breakEvenCell = "";
+
+    if (includeMileage) {
+      rateCell = `
+        <div><span class="efficiency-label">현금</span>${res.cashOnlyRecoveryRate.toFixed(2)}%</div>
+        <div class="item-efficiency-detail"><span class="efficiency-label">마일리지</span>${res.mileageAnalysis ? `${res.mileageAnalysis.mileageRecoveryRate.toFixed(2)}%` : "적용 불가"}</div>
+      `;
+      profitCell = `
+        <div><span class="efficiency-label">현금</span><span class="item-efficiency-profit-cell ${res.cashOnlyStatus.className}">${formatEfficiencyProfitText(res.cashOnlyProfitKrw)}</span></div>
+        <div class="item-efficiency-detail"><span class="efficiency-label">마일리지</span>${res.mileageAnalysis ? formatEfficiencyProfitText(res.mileageAnalysis.mileageProfitKrw) : "적용 불가"}</div>
+      `;
+      breakEvenCell = `
+        <div><span class="efficiency-label">현금</span>${renderCompactMesoSpan(res.cashOnlyBreakEvenMeso)}</div>
+        <div class="item-efficiency-detail">(${formatBreakEvenDiffText(res.expectedSalePrice, res.cashOnlyBreakEvenMeso)})</div>
+        <div class="item-efficiency-detail" style="margin-top:4px;"><span class="efficiency-label">마일리지</span>${res.mileageAnalysis ? `${renderCompactMesoSpan(res.mileageAnalysis.mileageBreakEvenMeso)} (${formatBreakEvenDiffText(res.expectedSalePrice, res.mileageAnalysis.mileageBreakEvenMeso)})` : "적용 불가"}</div>
+      `;
+    } else {
+      rateCell = `${res.cashOnlyRecoveryRate.toFixed(2)}%`;
+      profitCell = `<span class="item-efficiency-profit-cell ${res.cashOnlyStatus.className}">${formatEfficiencyProfitText(res.cashOnlyProfitKrw)}</span>`;
+      breakEvenCell = `
+        <div>${renderCompactMesoSpan(res.cashOnlyBreakEvenMeso)}</div>
+        <div class="item-efficiency-detail">${formatBreakEvenDiffText(res.expectedSalePrice, res.cashOnlyBreakEvenMeso)}</div>
+      `;
+    }
+
+    return `
+      <tr>
+        <td>${rankText}</td>
+        <td>${itemCell}</td>
+        <td>${formatCash(res.item.cashPrice)}</td>
+        <td>${expectedSaleCell}</td>
+        <td>${rateCell}</td>
+        <td>${profitCell}</td>
+        <td>${breakEvenCell}</td>
+      </tr>
+    `;
+  }).join("");
+
+  if (containerEl) {
+    containerEl.innerHTML = `
+      <table class="item-efficiency-table">
+        <thead>
+          <tr>
+            <th>순위</th>
+            <th>아이템</th>
+            <th>캐시 가격</th>
+            <th>예상 판매가</th>
+            <th>회수율</th>
+            <th>1개당 손익</th>
+            <th>본전 경매장가</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tableRowsHtml}
+        </tbody>
+      </table>
+    `;
+  }
+}
+
+function runItemEfficiencyComparison() {
+  const waterRate = parseNumberInput($("waterRate").value);
+  const feePercent = AUCTION_FEE_RATE * 100;
+  const includeMileage = $("includeMileageEfficiencyComparison") ? $("includeMileageEfficiencyComparison").checked : false;
+
+  const section = $("itemEfficiencyResultSection");
+  if (section) {
+    section.classList.remove("hidden");
+  }
+  expandCollapsibleSection({
+    buttonId: "toggleEfficiencyResultBtn",
+    bodyId: "itemEfficiencyResultBody",
+    expandedLabel: "가성비 비교 결과 접기",
+  });
+
+  if (waterRate <= 0) {
+    renderItemEfficiencyEmptyState("물통비율을 올바르게 입력해주세요.");
+    return;
+  }
+
+  const auctionPrices = getAuctionPrices();
+  const validEntries = [];
+  let totalCount = 0;
+
+  ITEMS.forEach((item, index) => {
+    totalCount++;
+    const expectedSalePrice = auctionPrices[item.id];
+    if (item.cashPrice > 0 && expectedSalePrice > 0) {
+      validEntries.push({
+        item,
+        expectedSalePrice,
+        originalIndex: index,
+      });
+    }
+  });
+
+  const excludedCount = totalCount - validEntries.length;
+
+  if (validEntries.length === 0) {
+    renderItemEfficiencyEmptyState("비교할 캐시 아이템의 예상 판매가격을 먼저 입력하세요.");
+    return;
+  }
+
+  const results = validEntries.map((entry) => {
+    const eff = calculateItemEfficiency(entry.item, {
+      expectedSalePrice: entry.expectedSalePrice,
+      waterRate,
+      feePercent,
+    });
+    eff.originalIndex = entry.originalIndex;
+    return eff;
+  });
+
+  results.sort((a, b) => {
+    const rateDifference = b.cashOnlyRecoveryRate - a.cashOnlyRecoveryRate;
+    if (Math.abs(rateDifference) > 0.000001) {
+      return rateDifference;
+    }
+    return a.originalIndex - b.originalIndex;
+  });
+
+  renderItemEfficiencyResults(results, {
+    totalCount,
+    validCount: validEntries.length,
+    excludedCount,
+    includeMileage,
+  });
+
+  if (section) {
+    section.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
 function resetInputs() {
   const confirmed = confirm("모든 입력값과 저장된 가격을 초기화하시겠습니까?");
 
@@ -1008,10 +1372,27 @@ function resetInputs() {
   $("remainingToNext").value = 300_000;
   $("selectedTargetMvp").value = 1_500_000;
   $("disableMileage").checked = false;
+  if ($("includeMileageEfficiencyComparison")) {
+    $("includeMileageEfficiencyComparison").checked = false;
+  }
 
   renderMvpTiers();
   updateCurrentMvpPreview();
   $("resultSection").classList.add("hidden");
+  if ($("itemEfficiencyResultSection")) {
+    $("itemEfficiencyResultSection").classList.add("hidden");
+  }
+
+  expandCollapsibleSection({
+    buttonId: "toggleMvpResultBtn",
+    bodyId: "mvpCalculationResultBody",
+    expandedLabel: "MVP 계산 결과 접기",
+  });
+  expandCollapsibleSection({
+    buttonId: "toggleEfficiencyResultBtn",
+    bodyId: "itemEfficiencyResultBody",
+    expandedLabel: "가성비 비교 결과 접기",
+  });
 
   alert("입력값이 초기화되었습니다.");
 }
@@ -1030,9 +1411,35 @@ $("currentTier").addEventListener("change", updateCurrentMvpPreview);
 $("remainingToNext").addEventListener("input", updateCurrentMvpPreview);
 
 $("calculateBtn").addEventListener("click", runSimulation);
+if ($("compareItemEfficiencyButton")) {
+  $("compareItemEfficiencyButton").addEventListener("click", runItemEfficiencyComparison);
+}
 $("saveStateBtn").addEventListener("click", saveCalculatorState);
 $("resetBtn").addEventListener("click", resetInputs);
 $("addCustomItemBtn").addEventListener("click", addCustomItem);
+
+document.addEventListener("change", (event) => {
+  if (event.target && event.target.id === "includeMileageEfficiencyComparison") {
+    const section = $("itemEfficiencyResultSection");
+    if (section && !section.classList.contains("hidden")) {
+      runItemEfficiencyComparison();
+    }
+  }
+});
+
+setupCollapsibleSection({
+  buttonId: "toggleMvpResultBtn",
+  bodyId: "mvpCalculationResultBody",
+  expandedLabel: "MVP 계산 결과 접기",
+  collapsedLabel: "MVP 계산 결과 펼치기",
+});
+
+setupCollapsibleSection({
+  buttonId: "toggleEfficiencyResultBtn",
+  bodyId: "itemEfficiencyResultBody",
+  expandedLabel: "가성비 비교 결과 접기",
+  collapsedLabel: "가성비 비교 결과 펼치기",
+});
 
 if ($("strategySelect")) {
   $("strategySelect").addEventListener("change", (event) => {

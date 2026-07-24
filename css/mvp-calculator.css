@@ -118,13 +118,15 @@ label span {
   min-width: 0;
 }
 
-.item-name {
+.item-name,
+.cash-item-name,
+.item-efficiency-item-name {
   font-weight: 800;
   min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
   word-break: keep-all;
+  overflow-wrap: normal;
+  line-height: 1.35;
 }
 
 .cash-price {
@@ -679,3 +681,450 @@ button.save-button {
     grid-template-columns: 1fr;
   }
 }
+
+/* --- 가성비 비교 스타일 --- */
+button.efficiency-button {
+  background: #7c3aed;
+  color: white;
+  box-shadow: 0 10px 20px rgba(124, 58, 237, 0.22);
+}
+
+button.efficiency-button:hover {
+  background: #6d28d9;
+}
+
+.item-efficiency-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.item-efficiency-header h2 {
+  margin: 0 0 6px;
+}
+
+.item-efficiency-header p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.item-efficiency-mileage-toggle {
+  max-width: 320px;
+}
+
+.item-efficiency-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.item-efficiency-summary {
+  margin-bottom: 20px;
+}
+
+.item-efficiency-best-item {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #eef2ff, #f5f3ff);
+  border: 1px solid #c7d2fe;
+  color: #3730a3;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.item-efficiency-best-item strong {
+  color: #1e1b4b;
+}
+
+.item-efficiency-table-wrapper {
+  overflow-x: auto;
+}
+
+.item-efficiency-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+
+.item-efficiency-table th,
+.item-efficiency-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.item-efficiency-table th {
+  background: #f9fafb;
+  color: #374151;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.item-efficiency-status {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.item-efficiency-status.is-profit {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.item-efficiency-status.is-break-even {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.item-efficiency-status.is-loss {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+}
+
+.item-efficiency-detail {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 3px;
+}
+
+.item-efficiency-empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: #6b7280;
+  background: #f9fafb;
+  border-radius: 14px;
+  border: 1px dashed #d1d5db;
+  font-size: 15px;
+}
+
+.efficiency-item-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+}
+
+.efficiency-item-cell img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+.efficiency-label {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: #e0e7ff;
+  color: #3730a3;
+  margin-right: 4px;
+}
+
+/* --- 컴팩트 메소 및 셀 하이라이터 스타일 --- */
+.compact-meso-value {
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.item-efficiency-profit-cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 5px 9px;
+  border-radius: 8px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.item-efficiency-profit-cell.is-profit {
+  color: #166534;
+  background: rgba(187, 247, 208, 0.72);
+  box-shadow: inset 0 -0.5em 0 rgba(134, 239, 172, 0.2);
+}
+
+.item-efficiency-profit-cell.is-loss {
+  color: #b91c1c;
+  background: rgba(254, 202, 202, 0.7);
+  box-shadow: inset 0 -0.5em 0 rgba(252, 165, 165, 0.18);
+}
+
+.item-efficiency-profit-cell.is-break-even {
+  color: #854d0e;
+  background: rgba(254, 240, 138, 0.55);
+}
+
+/* --- 가성비 비교 테이블 너비 조절 --- */
+.item-efficiency-table th:nth-child(1) { width: 54px; }
+.item-efficiency-table th:nth-child(2) { min-width: 150px; }
+.item-efficiency-table th:nth-child(3) { min-width: 100px; }
+.item-efficiency-table th:nth-child(4) { min-width: 110px; }
+.item-efficiency-table th:nth-child(5) { min-width: 82px; }
+.item-efficiency-table th:nth-child(6) { min-width: 120px; }
+.item-efficiency-table th:nth-child(7) { min-width: 150px; }
+
+/* --- 캐시 아이템 경매장 가격 섹션 헤더 및 버튼 배치 --- */
+.cash-price-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.cash-price-section-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.cash-price-section-copy h2 {
+  margin: 0 0 12px;
+}
+
+.cash-price-section-copy .section-help {
+  margin: 0;
+}
+
+.cash-price-section-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.cash-price-section-actions button {
+  padding: 10px 16px;
+  font-size: 14px;
+  border-radius: 12px;
+}
+
+@media (max-width: 760px) {
+  .cash-price-section-header {
+    flex-direction: column;
+  }
+
+  .cash-price-section-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}
+
+/* --- 접기/펼치기 섹션 스타일 --- */
+.result-collapsible-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 12px;
+}
+
+.result-card .result-collapsible-header {
+  align-items: center;
+}
+
+.result-collapsible-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.result-collapsible-title {
+  min-width: 0;
+  margin: 0 !important;
+  line-height: 1.35;
+}
+
+.result-collapsible-description {
+  margin: 4px 0 0;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.result-collapse-button {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  padding: 0;
+  border: 1px solid rgba(124, 58, 237, 0.24);
+  border-radius: 10px;
+  background: rgba(124, 58, 237, 0.06);
+  color: #6d28d9;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: none;
+  font-family: inherit;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.result-collapse-button:hover {
+  background: rgba(124, 58, 237, 0.12);
+  border-color: rgba(124, 58, 237, 0.42);
+  color: #5b21b6;
+  transform: none;
+}
+
+.result-collapse-button:active {
+  transform: scale(0.96);
+}
+
+.result-collapse-button:focus-visible {
+  outline: 3px solid rgba(124, 58, 237, 0.18);
+  outline-offset: 2px;
+}
+
+.result-collapse-icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+  transition: transform 180ms ease;
+  transform-origin: center;
+}
+
+.result-collapse-button[aria-expanded="false"] .result-collapse-icon {
+  transform: rotate(-90deg);
+}
+
+.result-collapse-button[aria-expanded="true"] .result-collapse-icon {
+  transform: rotate(0deg);
+}
+
+.result-collapsible-body {
+  display: block;
+  margin-top: 18px;
+}
+
+.result-collapsible-body.is-collapsed {
+  display: none !important;
+}
+
+@media (max-width: 620px) {
+  .result-collapsible-header {
+    gap: 9px;
+  }
+
+  .result-collapse-button {
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+  }
+
+  .result-collapse-icon {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* --- 버튼 툴팁 스타일 --- */
+.action-button-tooltip-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.action-button-tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  z-index: 100;
+  width: max-content;
+  max-width: min(280px, 80vw);
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #111827;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
+  white-space: normal;
+  transform: translate(-50%, 4px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.22);
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease,
+    visibility 0.16s ease;
+}
+
+.action-button-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: #111827;
+}
+
+.action-button-tooltip-wrapper:hover .action-button-tooltip,
+.action-button-tooltip-wrapper:focus-within .action-button-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+
+/* --- 요약 카드 내 마일리지 체크박스 스타일 --- */
+.summary-checkbox-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.summary-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.summary-checkbox-row input {
+  width: 16px;
+  height: 16px;
+  accent-color: #6366f1;
+  flex-shrink: 0;
+}
+
+.summary-checkbox-row span {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: #374151;
+  line-height: 1.2;
+}
+
+.summary-checkbox-row small {
+  display: block;
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+
+
