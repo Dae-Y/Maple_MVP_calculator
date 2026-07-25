@@ -73,21 +73,35 @@
           <div class="timer-card-header timer-card-heading-row">
             <h2 class="timer-card-title">사냥 세션 타이머</h2>
             <span class="timer-demo-wrap">
-              <button id="btnSessionDemo" class="timer-demo-button" type="button" aria-describedby="sessionDemoTooltip">
-                데모
+              <button id="btnSessionDemo" class="timer-demo-button" type="button" aria-describedby="sessionDemoTooltip"
+                title="재설치 알림음과 화면 효과를 미리 확인합니다.">
+                테스트 알림 보기
               </button>
               <span id="sessionDemoTooltip" class="timer-demo-tooltip" role="tooltip">
-                타이머 종료 알림을 미리 확인합니다.
+                재설치 알림음과 화면 효과를 미리 확인합니다.
               </span>
             </span>
           </div>
 
-          <div class="timer-display timer-display-with-icon">
+          <div id="sessionDisplay" class="timer-display timer-display-with-icon session-timer-display">
             <div class="countdown-overlay hidden" id="countdownOverlay">
               <div class="countdown-number" id="countdownNumber">3</div>
             </div>
-            <img src="assets/hunting-timer/clock.png" alt="시계 아이콘" class="timer-display-icon" />
-            <span id="sessionTimerDisplay">30:00</span>
+
+            <div class="session-clock-panel">
+              <img src="assets/hunting-timer/clock.png" alt="시계 아이콘" class="timer-display-icon session-clock-icon" />
+              <span id="sessionTimerDisplay" class="session-time-value">30:00</span>
+            </div>
+
+            <div id="lunaGatheringPanel" class="luna-gathering-panel" hidden>
+              <img src="assets/hunting-timer/luna_gathering.webp" alt="루나 게더링 아이콘" class="luna-gathering-icon" />
+              <div class="luna-gathering-copy">
+                <span class="luna-gathering-label">루나 게더링</span>
+                <strong id="lunaGatheringCount">0 / 230</strong>
+                <span id="lunaGatheringLimitText" class="luna-gathering-limit-text" hidden>오늘 사용 완료</span>
+                <span id="lunaExtensionBadge" class="luna-extension-badge" hidden>익스텐션</span>
+              </div>
+            </div>
           </div>
 
           <div class="hunting-session-action-row">
@@ -121,6 +135,7 @@
           <p id="janusLevelDescription" class="timer-card-desc install-timer-desc">
             야누스 1렙은 구체 1개, 지속시간 60초입니다. 에르다 샤워 사용을 권장합니다.
           </p>
+          <p id="magnetPetDescription" class="timer-card-desc install-timer-desc magnet-pet-description" hidden></p>
 
           <div class="timer-display-group">
             <div class="install-timer-container">
@@ -128,6 +143,8 @@
                 <img src="assets/hunting-timer/janus.png" alt="솔 야누스 아이콘" class="install-timer-display-icon" />
                 <span class="install-timer-label">시간 :</span>
                 <strong id="skillTimerDisplay">01:00</strong>
+                <span id="lunaExtensionPulse" class="luna-extension-pulse" hidden></span>
+                <span id="skillTimerSubLabel" class="install-timer-sublabel" hidden>재설치 불필요</span>
               </div>
             </div>
 
@@ -137,6 +154,19 @@
                 <span class="install-timer-label">시간 :</span>
                 <strong id="erdaTimerDisplay">01:00</strong>
               </div>
+            </div>
+          </div>
+
+          <div class="install-option-row magnet-pet-option-row">
+            <img src="assets/hunting-timer/pet_luna_pc.webp" alt="자석펫 아이콘" class="install-option-icon" />
+            <span class="install-option-name">자석펫</span>
+            <div class="install-option-buttons magnet-pet-buttons" role="group" aria-label="자석펫 수 선택">
+              <button type="button" class="btn-preset-magnet timer-option-button magnet-pet-button active"
+                data-magnet-pet-mode="0-3" aria-pressed="true">0~3석펫</button>
+              <button type="button" class="btn-preset-magnet timer-option-button magnet-pet-button"
+                data-magnet-pet-mode="4" aria-pressed="false">4석펫</button>
+              <button type="button" class="btn-preset-magnet timer-option-button magnet-pet-button"
+                data-magnet-pet-mode="5" aria-pressed="false">5석펫</button>
             </div>
           </div>
 
@@ -158,6 +188,23 @@
               <button id="btnErdaEnabled" class="btn-preset-erda" type="button" data-enabled="true">사용</button>
               <button id="btnErdaDisabled" class="btn-preset-erda active" type="button"
                 data-enabled="false">미사용</button>
+            </div>
+            <span id="erdaDisabledNote" class="erda-disabled-note" hidden>3누스 설치 가능합니다</span>
+          </div>
+
+          <div id="lunaGatheringCountControls" class="install-option-row luna-count-control-row" hidden>
+            <div class="install-option-label luna-count-option-label">
+              <img src="assets/hunting-timer/luna_gathering.webp" alt="" class="install-option-icon" />
+              <span class="install-option-name">루나 게더링 횟수</span>
+            </div>
+            <div class="luna-count-controls">
+              <label class="sr-only" for="lunaGatheringCountInput">오늘 사용한 루나 게더링 횟수</label>
+              <input id="lunaGatheringCountInput" class="luna-count-input" type="number" min="0" max="230" step="1"
+                inputmode="numeric" />
+              <span class="luna-count-limit">/ 230</span>
+              <button id="btnApplyLunaGatheringCount" class="timer-small-action-button" type="button">적용</button>
+              <button id="btnResetLunaGatheringCount" class="timer-small-action-button timer-small-action-button--reset"
+                type="button">초기화</button>
             </div>
           </div>
 
@@ -210,33 +257,64 @@
         </section>
       </div>
 
-      <!-- 우측 사이드바: 사냥 체크리스트 -->
-      <aside class="checklist-sidebar">
-        <section class="card checklist-card">
+      <!-- 우측 사이드바: 루나 쁘띠 스킬 정보 -->
+      <aside class="luna-info-sidebar">
+        <section class="card luna-info-card">
           <div class="timer-card-header">
-            <h2 class="timer-card-title">사냥 준비 체크리스트</h2>
+            <h2 class="timer-card-title">루나 쁘띠 스킬 정보</h2>
           </div>
-          <p style="color: #6b7280; font-size: 13.5px; margin: -10px 0 15px; line-height: 1.4;">
-            사냥 시작 전에 잊기 쉬운 버프와 아이템 확인용 체크리스트입니다. 체크 상태는 브라우저에 저장됩니다.
+          <p class="luna-info-intro">
+            루나 쁘띠 (자석펫) 전용 스킬 및 특수 효과 정보입니다.
           </p>
 
-          <div class="checklist-list">
-            <label class="checklist-item">
-              <input type="checkbox" class="chk-reminder" data-index="0" />
-              <span>소재비 사용 (재획비 / 재물 획득의 비약)</span>
-            </label>
-            <label class="checklist-item">
-              <input type="checkbox" class="chk-reminder" data-index="1" />
-              <span>경험치 쿠폰 (경쿠 / MVP 경쿠)</span>
-            </label>
-            <label class="checklist-item">
-              <input type="checkbox" class="chk-reminder" data-index="2" />
-              <span>유니온/링크/버프 확인 (유니온의 힘 등)</span>
-            </label>
-            <label class="checklist-item">
-              <input type="checkbox" class="chk-reminder" data-index="3" />
-              <span>설치기 타이머 켜기</span>
-            </label>
+          <div class="luna-info-list">
+            <article class="luna-info-item luna-skill-card">
+              <div class="luna-skill-card-header">
+                <div class="luna-skill-title-group">
+                  <img src="assets/hunting-timer/luna_gathering.webp" alt="" class="luna-skill-icon" />
+                  <h3 class="luna-skill-title">루나 게더링</h3>
+                </div>
+                <div class="luna-info-badges">
+                  <span class="luna-pet-tag tag-4pet">4석펫</span>
+                </div>
+              </div>
+              <p class="luna-skill-description">
+                <span>맵에 드롭된 아이템을 모두 끌어오는 스킬입니다.</span>
+                <span>일 230회 온/오프 설정 가능.</span>
+              </p>
+            </article>
+
+            <article class="luna-info-item luna-skill-card">
+              <div class="luna-skill-card-header">
+                <div class="luna-skill-title-group">
+                  <img src="assets/hunting-timer/luna_extention.png" alt="" class="luna-skill-icon" />
+                  <h3 class="luna-skill-title">루나 익스텐션</h3>
+                </div>
+                <div class="luna-info-badges">
+                  <span class="luna-pet-tag tag-5pet">5석펫</span>
+                </div>
+              </div>
+              <p class="luna-skill-description">
+                <span>게더링 발동 시 설치 중인 야누스의 지속시간을 늘려줍니다.</span>
+                <span>증가량은 솔 야누스 레벨에 따라 달라지며,</span>
+                <span>최대 300초까지 증가할 수 있습니다. (30레벨 기준 약 120초 증가)</span>
+              </p>
+            </article>
+
+            <article class="luna-info-item luna-skill-card">
+              <div class="luna-skill-card-header">
+                <div class="luna-skill-title-group">
+                  <img src="assets/hunting-timer/luna_powerup.png" alt="" class="luna-skill-icon" />
+                  <h3 class="luna-skill-title">루나 파워업</h3>
+                </div>
+                <div class="luna-info-badges">
+                  <span class="luna-pet-tag tag-6pet">6석펫</span>
+                </div>
+              </div>
+              <p class="luna-skill-description">
+                공격력과 마력을 각각 30 증가시켜 줍니다.
+              </p>
+            </article>
           </div>
         </section>
       </aside>

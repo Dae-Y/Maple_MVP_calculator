@@ -885,3 +885,396 @@
     box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
   }
 }
+
+/* --- 자석펫 및 루나 게더링 스타일 --- */
+.session-timer-display.has-luna-gathering {
+  display: grid;
+  grid-template-columns: minmax(0, 1.75fr) minmax(150px, 0.75fr);
+  gap: 12px;
+  align-items: stretch;
+  padding: 16px;
+}
+
+.session-timer-display:not(.has-luna-gathering) #lunaGatheringPanel,
+.luna-gathering-panel[hidden] {
+  display: none !important;
+}
+
+.session-clock-panel,
+.luna-gathering-panel {
+  min-width: 0;
+  border-radius: inherit;
+}
+
+.session-timer-display.has-luna-gathering .session-clock-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.session-timer-display.has-luna-gathering .session-clock-icon {
+  width: clamp(34px, 8vw, 52px);
+  height: auto;
+}
+
+.session-timer-display.has-luna-gathering .session-time-value {
+  font-size: clamp(2.8rem, 6vw, 4.5rem);
+}
+
+.luna-gathering-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 12px;
+  border-left: 1px solid rgba(99, 102, 241, 0.16);
+  font-family: "Maplestory", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.luna-gathering-icon {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.luna-gathering-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  text-align: left;
+  font-family: "Maplestory", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.luna-gathering-label {
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 800;
+  white-space: nowrap;
+  font-family: "Maplestory", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+#lunaGatheringCount {
+  color: #312e81;
+  font-size: 1.2rem;
+  font-weight: 700;
+  white-space: nowrap;
+  font-family: "Maplestory", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.luna-gathering-panel.is-limit-reached #lunaGatheringCount {
+  color: #64748b;
+}
+
+.luna-gathering-limit-text {
+  font-size: 0.68rem;
+  color: #6366f1;
+  font-weight: 700;
+  white-space: nowrap;
+  font-family: "Maplestory", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.luna-extension-badge {
+  width: fit-content;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(124, 58, 237, 0.1);
+  color: #6d28d9;
+  font-size: 0.72rem;
+  font-weight: 900;
+  white-space: nowrap;
+  font-family: "Maplestory", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.magnet-pet-buttons {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.magnet-pet-buttons button {
+  font-family: inherit;
+  padding: 6px 12px !important;
+  border-radius: 999px !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  background: white;
+  color: #4b5563;
+  box-shadow: none;
+  border: 1px solid #d1d5db;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.magnet-pet-buttons button:hover:not(:disabled) {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.magnet-pet-buttons button.active {
+  background: #4f46e5;
+  color: white;
+  border-color: #4f46e5;
+}
+
+.erda-disabled-note {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 700;
+  margin-left: 4px;
+  white-space: nowrap;
+}
+
+.btn-preset-erda:disabled {
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+  background: #f3f4f6 !important;
+  color: #9ca3af !important;
+  border-color: #e5e7eb !important;
+}
+
+.luna-extension-pulse {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: rgba(124, 58, 237, 0.11);
+  color: #6d28d9;
+  font-family: "Maplestory", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.76rem;
+  font-weight: 700;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(2px);
+  transition: opacity 160ms ease, transform 160ms ease;
+  margin-left: 6px;
+}
+
+.luna-extension-pulse.is-visible {
+  display: inline-flex;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.luna-extension-pulse[hidden] {
+  display: none !important;
+}
+
+.install-timer-sublabel {
+  font-size: 13px;
+  color: #6d28d9;
+  font-weight: 700;
+  background: rgba(124, 58, 237, 0.1);
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-left: 4px;
+}
+
+.magnet-pet-sub-desc {
+  display: inline-block;
+  margin-top: 2px;
+  color: #6366f1;
+  font-weight: 600;
+}
+
+/* --- 루나 쁘띠 스킬 정보 사이드바 스타일 --- */
+.luna-info-card {
+  position: sticky;
+  top: 24px;
+  font-family: "Maplestory", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.luna-info-intro {
+  color: #6b7280;
+  font-size: 13.5px;
+  margin: -10px 0 16px;
+  line-height: 1.4;
+  font-family: inherit;
+}
+
+.luna-info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.luna-info-item {
+  padding: 3px 12px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #f8fafc;
+  transition: all 0.2s ease;
+}
+
+.luna-info-item:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.luna-skill-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.luna-skill-title-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.luna-skill-icon {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  object-fit: contain;
+  display: block;
+  transform: translateY(10px);
+}
+
+.luna-skill-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e1b4b;
+  font-family: inherit;
+  line-height: 1.2;
+}
+
+.luna-info-badges {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.luna-pet-tag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.luna-pet-tag.tag-4pet {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.luna-pet-tag.tag-5pet {
+  background: #f3e8ff;
+  color: #6b21a8;
+}
+
+.luna-pet-tag.tag-6pet {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.luna-skill-description {
+  display: grid;
+  gap: 3px;
+  margin: 10px 0 0;
+  line-height: 1.55;
+  font-size: 13px;
+  color: #4b5563;
+  font-family: inherit;
+}
+
+@media (max-width: 620px) {
+  .session-timer-display.has-luna-gathering {
+    grid-template-columns: minmax(0, 1fr) minmax(120px, auto);
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .luna-gathering-panel {
+    padding: 8px;
+  }
+
+  .luna-gathering-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  #lunaGatheringCount {
+    font-size: 1rem;
+  }
+}
+
+/* --- 루나 게더링 일일 횟수 수동 조절 행 스타일 --- */
+.luna-count-control-row[hidden] {
+  display: none !important;
+}
+
+.luna-count-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.luna-count-input {
+  width: 64px;
+  min-height: 34px;
+  padding: 6px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #1e1b4b;
+  font-family: "Maplestory", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.luna-count-input:focus {
+  outline: 3px solid rgba(79, 70, 229, 0.15);
+  border-color: #6366f1;
+}
+
+.luna-count-limit {
+  color: #4b5563;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.timer-small-action-button {
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid rgba(79, 70, 229, 0.25);
+  border-radius: 10px;
+  background: #ffffff;
+  color: #4338ca;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.timer-small-action-button:hover:not(:disabled) {
+  background: #e0e7ff;
+}
+
+.timer-small-action-button--reset {
+  color: #b91c1c;
+  border-color: rgba(220, 38, 38, 0.24);
+  background: rgba(254, 242, 242, 0.8);
+}
+
+.timer-small-action-button--reset:hover:not(:disabled) {
+  background: #fee2e2;
+}
+
+.luna-count-input:disabled,
+.timer-small-action-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}

@@ -3,6 +3,20 @@
   const MATERIAL_DURATION_MS = 30 * 60 * 1000; // 실사용: 1소재 = 30분
   // const MATERIAL_DURATION_MS = 30 * 1000; // 테스트용: 1소재 = 30초
 
+  const JANUS_BASE_DURATION_MS_BY_LEVEL = {
+    60: 60_000,
+    70: 70_000,
+    80: 80_000,
+    120: 120_000,
+  };
+
+  const LUNA_EXTENSION_MAX_DURATION_MS = 300_000;
+  const LUNA_GATHERING_INTERVAL_MS = 90_000;
+  const LUNA_GATHERING_DAILY_LIMIT = 230;
+
+  const MAGNET_PET_MODE_KEY = "maple_tools_hunting_magnet_pet_mode_v1";
+  const LUNA_GATHERING_DAILY_KEY = "maple_tools_hunting_luna_gathering_daily_v1";
+
   const JANUS_LEVEL_DESCRIPTIONS = {
     60: "야누스 1렙은 구체 1개, 지속시간 60초입니다. 에르다 샤워 사용을 권장합니다.",
     70: "야누스 10렙은 구체 2개, 지속시간 70초입니다. 에르다 샤워를 사용해도 좋습니다.",
@@ -11,10 +25,22 @@
   };
 
   // DOM 요소
-  const sessionDisplay = document.getElementById("sessionTimerDisplay");
+  const sessionDisplay = document.getElementById("sessionDisplay");
+  const sessionTimeDisplay = document.getElementById("sessionTimerDisplay");
   const skillDisplay = document.getElementById("skillTimerDisplay");
+  const skillTimerSubLabel = document.getElementById("skillTimerSubLabel");
   const skillAlertMessage = document.getElementById("skillAlertMessage");
   const janusLevelDescription = document.getElementById("janusLevelDescription");
+  const magnetPetDescription = document.getElementById("magnetPetDescription");
+
+  const lunaGatheringPanel = document.getElementById("lunaGatheringPanel");
+  const lunaGatheringCountEl = document.getElementById("lunaGatheringCount");
+  const lunaGatheringLimitText = document.getElementById("lunaGatheringLimitText");
+  const lunaExtensionBadge = document.getElementById("lunaExtensionBadge");
+  const lunaGatheringCountControls = document.getElementById("lunaGatheringCountControls");
+  const lunaGatheringCountInput = document.getElementById("lunaGatheringCountInput");
+  const btnApplyLunaGatheringCount = document.getElementById("btnApplyLunaGatheringCount");
+  const btnResetLunaGatheringCount = document.getElementById("btnResetLunaGatheringCount");
 
   const erdaTimerDisplay = document.getElementById("erdaTimerDisplay");
   const erdaTimerDisplayContainer = document.getElementById("erdaTimerDisplayContainer");
@@ -33,12 +59,20 @@
   const materialCountValue = document.getElementById("materialCountValue");
 
   const skillPresets = document.querySelectorAll(".btn-preset-skill");
-  const checklistItems = document.querySelectorAll(".chk-reminder");
+  const magnetPetButtons = document.querySelectorAll(".btn-preset-magnet");
 
   // 타이머 관련 변수 (기본값)
   let selectedMaterialCount = 1;
   let selectedSessionMinutes = 30;
   let selectedSkillSeconds = 60;
+
+  // 자석펫 및 루나 게더링 상태 변수
+  let magnetPetMode = "0-3"; // "0-3", "4", "5"
+  let lunaGatheringCount = 0;
+  let lunaGatheringDateKey = "";
+  let lunaGatheringNextAt = null;
+  let remainingLunaGatheringMs = LUNA_GATHERING_INTERVAL_MS;
+  let hasStartedLunaGatheringForSession = false;
 
   // 타이머 실행 상태 변수 (localStorage 저장 제외)
   let isRunning = false;
@@ -53,13 +87,15 @@
   let erdaRestartTimeoutId = null;
 
   let remainingSessionMs = selectedMaterialCount * MATERIAL_DURATION_MS;
-  let remainingSkillMs = selectedSkillSeconds * 1000;
+  let remainingSkillMs = JANUS_BASE_DURATION_MS_BY_LEVEL[selectedSkillSeconds] ?? (selectedSkillSeconds * 1000);
   let remainingErdaMs = 60 * 1000;
 
   let sessionEndAt = null;
   let skillEndAt = null;
   let erdaEndAt = null;
   let updateIntervalId = null;
+  let lastTickTime = null;
+  let pulseTimeoutId = null;
 
   // 데모 및 플래시 관련 상태 변수
   let isSessionDemoRunning = false;
@@ -107,6 +143,7 @@
   // 1. 초기값 및 로컬스토리지 로드
   function init() {
     loadSettings();
+    hideLunaExtensionPulse();
     updateDisplays();
     setupEventListeners();
   }
@@ -134,11 +171,22 @@
     selectedSessionMinutes = selectedMaterialCount * 30;
     remainingSessionMs = selectedMaterialCount * MATERIAL_DURATION_MS;
 
+    // 자석펫 모드 로드
+    const savedMagnetPet = localStorage.getItem(MAGNET_PET_MODE_KEY);
+    if (savedMagnetPet === "4" || savedMagnetPet === "5") {
+      magnetPetMode = savedMagnetPet;
+    } else {
+      magnetPetMode = "0-3";
+    }
+    updateMagnetPetButtonsUI();
+
+    // 루나 게더링 일일 데이터 로드
+    loadLunaGatheringData();
+
     // 설치기 주기 설정 로드
     const savedSkill = localStorage.getItem("maple_tools_skill_seconds");
     if (savedSkill) {
       selectedSkillSeconds = parseInt(savedSkill, 10);
-      remainingSkillMs = selectedSkillSeconds * 1000;
 
       // 프리셋 활성화 UI 업데이트
       skillPresets.forEach(btn => {
@@ -150,6 +198,9 @@
       });
     }
 
+    const baseJanusMs = JANUS_BASE_DURATION_MS_BY_LEVEL[selectedSkillSeconds] ?? (selectedSkillSeconds * 1000);
+    remainingSkillMs = baseJanusMs;
+
     // 에르다 샤워 사용 여부 로드 (기본값: 미사용 / false)
     const savedErda = localStorage.getItem("maple_tools_erda_enabled");
     if (savedErda !== null) {
@@ -158,32 +209,7 @@
       isErdaEnabled = false;
     }
 
-    // UI 업데이트
-    if (isErdaEnabled) {
-      if (btnErdaEnabled) btnErdaEnabled.classList.add("active");
-      if (btnErdaDisabled) btnErdaDisabled.classList.remove("active");
-      if (erdaTimerDisplayContainer) erdaTimerDisplayContainer.classList.remove("hidden");
-    } else {
-      if (btnErdaEnabled) btnErdaEnabled.classList.remove("active");
-      if (btnErdaDisabled) btnErdaDisabled.classList.add("active");
-      if (erdaTimerDisplayContainer) erdaTimerDisplayContainer.classList.add("hidden");
-    }
-
-    // 체크리스트 상태 로드
-    const savedChecklist = localStorage.getItem("maple_tools_checklist");
-    if (savedChecklist) {
-      try {
-        const checkedStates = JSON.parse(savedChecklist);
-        checklistItems.forEach((chk, index) => {
-          if (checkedStates[index] !== undefined) {
-            chk.checked = checkedStates[index];
-            toggleChecklistItemClass(chk);
-          }
-        });
-      } catch (e) {
-        console.error("Failed to parse checklist states:", e);
-      }
-    }
+    updateErdaAutoGuidance();
 
     // 뽀모도로 접기/펼치기 상태 로드
     const savedPomodoroCollapsed = localStorage.getItem("maple_tools_pomodoro_collapsed");
@@ -209,44 +235,275 @@
     localStorage.setItem("maple_tools_material_count", selectedMaterialCount);
     localStorage.setItem("maple_tools_skill_seconds", selectedSkillSeconds);
     localStorage.setItem("maple_tools_erda_enabled", isErdaEnabled);
+    localStorage.setItem(MAGNET_PET_MODE_KEY, magnetPetMode);
   }
 
-  // 로컬스토리지에 체크리스트 상태 저장
-  function saveChecklist() {
-    const checkedStates = Array.from(checklistItems).map(chk => chk.checked);
-    localStorage.setItem("maple_tools_checklist", JSON.stringify(checkedStates));
+  // 2. KST 및 루나 게더링 헬퍼 함수들
+  function getKstDateKey(date = new Date()) {
+    try {
+      return new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Seoul",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(date);
+    } catch (e) {
+      const kstDate = new Date(date.getTime() + (date.getTimezoneOffset() + 9 * 60) * 60 * 1000);
+      const year = kstDate.getFullYear();
+      const month = String(kstDate.getMonth() + 1).padStart(2, "0");
+      const day = String(kstDate.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
   }
 
-  // 체크리스트 아이템 CSS 클래스 변경
-  function toggleChecklistItemClass(chk) {
-    const label = chk.closest(".checklist-item");
-    if (label) {
-      if (chk.checked) {
-        label.classList.add("checked");
-      } else {
-        label.classList.remove("checked");
+  function loadLunaGatheringData() {
+    const currentKstDateKey = getKstDateKey();
+    const savedData = localStorage.getItem(LUNA_GATHERING_DAILY_KEY);
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        if (parsed && parsed.dateKey === currentKstDateKey) {
+          lunaGatheringDateKey = currentKstDateKey;
+          lunaGatheringCount = Math.min(Math.max(parseInt(parsed.count, 10) || 0, 0), LUNA_GATHERING_DAILY_LIMIT);
+          return;
+        }
+      } catch (e) {
+        console.error("Failed to parse Luna Gathering data:", e);
+      }
+    }
+    lunaGatheringDateKey = currentKstDateKey;
+    lunaGatheringCount = 0;
+    saveLunaGatheringData();
+  }
+
+  function saveLunaGatheringData() {
+    localStorage.setItem(
+      LUNA_GATHERING_DAILY_KEY,
+      JSON.stringify({
+        dateKey: lunaGatheringDateKey || getKstDateKey(),
+        count: lunaGatheringCount,
+      })
+    );
+  }
+
+  function checkKstDateReset() {
+    const currentKstDateKey = getKstDateKey();
+    if (lunaGatheringDateKey !== currentKstDateKey) {
+      lunaGatheringDateKey = currentKstDateKey;
+      lunaGatheringCount = 0;
+      saveLunaGatheringData();
+      updateDisplays();
+    }
+  }
+
+  function isLunaGatheringEnabled() {
+    return magnetPetMode === "4" || magnetPetMode === "5";
+  }
+
+  function isLunaExtensionActive() {
+    return magnetPetMode === "5" && lunaGatheringCount < LUNA_GATHERING_DAILY_LIMIT;
+  }
+
+  function applyLunaExtension() {
+    if (!isLunaExtensionActive()) return false;
+    if (remainingSkillMs <= 0) return false;
+
+    const extensionMs = JANUS_BASE_DURATION_MS_BY_LEVEL[selectedSkillSeconds] ?? (selectedSkillSeconds * 1000);
+    remainingSkillMs = Math.min(LUNA_EXTENSION_MAX_DURATION_MS, remainingSkillMs + extensionMs);
+    if (isRunning) {
+      skillEndAt = Date.now() + remainingSkillMs;
+    }
+
+    showLunaExtensionPulse(extensionMs);
+    return true;
+  }
+
+  const LUNA_EXTENSION_PULSE_DURATION_MS = 3000;
+  let lunaExtensionPulseTimeoutId = null;
+
+  function showLunaExtensionPulse(extensionMs) {
+    const pulseEl = document.getElementById("lunaExtensionPulse");
+    if (!pulseEl) return;
+
+    if (lunaExtensionPulseTimeoutId !== null) {
+      clearTimeout(lunaExtensionPulseTimeoutId);
+      lunaExtensionPulseTimeoutId = null;
+    }
+
+    const formatted = formatMs(extensionMs);
+    pulseEl.textContent = "+" + formatted;
+    pulseEl.hidden = false;
+    pulseEl.classList.add("is-visible");
+
+    lunaExtensionPulseTimeoutId = setTimeout(() => {
+      hideLunaExtensionPulse();
+    }, LUNA_EXTENSION_PULSE_DURATION_MS);
+  }
+
+  function hideLunaExtensionPulse() {
+    if (lunaExtensionPulseTimeoutId !== null) {
+      clearTimeout(lunaExtensionPulseTimeoutId);
+      lunaExtensionPulseTimeoutId = null;
+    }
+
+    const pulseEl = document.getElementById("lunaExtensionPulse");
+    if (pulseEl) {
+      pulseEl.hidden = true;
+      pulseEl.classList.remove("is-visible");
+      pulseEl.textContent = "";
+    }
+  }
+
+  function updateErdaAutoGuidance() {
+    const erdaDisabledNote = document.getElementById("erdaDisabledNote");
+    const isJanusHighLevel = selectedSkillSeconds === 80 || selectedSkillSeconds === 120;
+
+    if (isJanusHighLevel) {
+      if (isErdaEnabled) {
+        isErdaEnabled = false;
+        saveSettings();
+      }
+
+      if (btnErdaEnabled) {
+        btnErdaEnabled.disabled = true;
+        btnErdaEnabled.classList.remove("active");
+      }
+      if (btnErdaDisabled) {
+        btnErdaDisabled.classList.add("active");
+      }
+      if (erdaTimerDisplayContainer) {
+        erdaTimerDisplayContainer.classList.add("hidden");
+      }
+      if (erdaDisabledNote) {
+        erdaDisabledNote.hidden = false;
+      }
+    } else {
+      if (!isRunning && !isCountingDown && !isSessionDemoRunning) {
+        if (btnErdaEnabled) btnErdaEnabled.disabled = false;
+      }
+      if (erdaDisabledNote) {
+        erdaDisabledNote.hidden = true;
       }
     }
   }
 
-  // 2. 디스플레이 갱신 함수
+  function updateMagnetPetButtonsUI() {
+    magnetPetButtons.forEach(btn => {
+      const mode = btn.dataset.magnetPetMode;
+      if (mode === magnetPetMode) {
+        btn.classList.add("active");
+        btn.setAttribute("aria-pressed", "true");
+      } else {
+        btn.classList.remove("active");
+        btn.setAttribute("aria-pressed", "false");
+      }
+    });
+  }
+
+  function setMagnetPetMode(mode) {
+    if (isRunning || isCountingDown || isSessionDemoRunning) return;
+    if (mode !== "0-3" && mode !== "4" && mode !== "5") return;
+
+    magnetPetMode = mode;
+    saveSettings();
+    updateMagnetPetButtonsUI();
+    hideLunaExtensionPulse();
+
+    resetTimers(false);
+  }
+
+  // 3. 디스플레이 갱신 함수
   function updateDisplays() {
-    sessionDisplay.textContent = formatMs(remainingSessionMs);
+    if (sessionTimeDisplay) {
+      sessionTimeDisplay.textContent = formatMs(remainingSessionMs);
+    }
+
     skillDisplay.textContent = formatMs(remainingSkillMs);
+    if (skillTimerSubLabel) skillTimerSubLabel.hidden = true;
+
     if (isErdaEnabled && erdaTimerDisplay) {
       erdaTimerDisplay.textContent = formatMs(remainingErdaMs);
     }
+
+    updateErdaAutoGuidance();
+    updateLunaGatheringDisplay();
     updateMaterialDisplay();
     updateDemoButtonState();
     updateJanusDescription();
+    updateMagnetPetDescription();
     updatePomodoroDisplay();
     updatePomodoroModeText();
     updatePomodoroCounters();
   }
 
+  function updateLunaGatheringDisplay() {
+    if (!sessionDisplay || !lunaGatheringPanel) return;
+
+    if (isLunaGatheringEnabled()) {
+      sessionDisplay.classList.add("has-luna-gathering");
+      lunaGatheringPanel.hidden = false;
+      if (lunaGatheringCountControls) lunaGatheringCountControls.hidden = false;
+
+      if (magnetPetMode === "5" && isLunaExtensionActive()) {
+        if (lunaExtensionBadge) lunaExtensionBadge.hidden = false;
+      } else {
+        if (lunaExtensionBadge) lunaExtensionBadge.hidden = true;
+      }
+
+      if (lunaGatheringCountEl) {
+        lunaGatheringCountEl.textContent = `${lunaGatheringCount} / ${LUNA_GATHERING_DAILY_LIMIT}`;
+      }
+
+      if (lunaGatheringCountInput && document.activeElement !== lunaGatheringCountInput) {
+        lunaGatheringCountInput.value = String(lunaGatheringCount);
+      }
+
+      if (lunaGatheringCount >= LUNA_GATHERING_DAILY_LIMIT) {
+        lunaGatheringPanel.classList.add("is-limit-reached");
+        if (lunaGatheringLimitText) lunaGatheringLimitText.hidden = false;
+      } else {
+        lunaGatheringPanel.classList.remove("is-limit-reached");
+        if (lunaGatheringLimitText) lunaGatheringLimitText.hidden = true;
+      }
+    } else {
+      sessionDisplay.classList.remove("has-luna-gathering");
+      lunaGatheringPanel.hidden = true;
+      if (lunaGatheringCountControls) lunaGatheringCountControls.hidden = true;
+      if (lunaExtensionBadge) lunaExtensionBadge.hidden = true;
+    }
+  }
+
+  function getJanusExtensionFormattedText(seconds) {
+    if (seconds === 60) return "1분";
+    if (seconds === 70) return "1분 10초";
+    if (seconds === 80) return "1분 20초";
+    if (seconds === 120) return "2분";
+    return "";
+  }
+
   function updateJanusDescription() {
-    if (janusLevelDescription) {
+    if (!janusLevelDescription) return;
+    if (magnetPetMode === "5") {
+      const extText = getJanusExtensionFormattedText(selectedSkillSeconds);
+      janusLevelDescription.innerHTML = `루나 게더링 발동 시 남은 솔 야누스 시간에 기본 지속시간이 추가됩니다.<br>현재 레벨은 게더링 1회당 ${extText}가 증가하며, 최대 5분까지 유지할 수 있습니다.`;
+    } else if (magnetPetMode === "4") {
+      janusLevelDescription.textContent = (JANUS_LEVEL_DESCRIPTIONS[selectedSkillSeconds] || "") + " 루나 게더링 횟수만 기록하며, 야누스 재설치 타이머는 기존 방식으로 동작합니다.";
+    } else {
       janusLevelDescription.textContent = JANUS_LEVEL_DESCRIPTIONS[selectedSkillSeconds] || "";
+    }
+  }
+
+  function updateMagnetPetDescription() {
+    if (!magnetPetDescription) return;
+    if (magnetPetMode === "4") {
+      magnetPetDescription.hidden = false;
+      magnetPetDescription.innerHTML = "루나 게더링이 90초마다 발동하며, 하루 최대 230회까지 사용 횟수를 기록합니다.";
+    } else if (magnetPetMode === "5") {
+      magnetPetDescription.hidden = false;
+      magnetPetDescription.innerHTML = '루나 게더링이 90초마다 발동하며, 루나 익스텐션이 설치된 솔 야누스의 지속시간을 연장합니다.<br><span class="magnet-pet-sub-desc">※ 사냥 시작 직후 솔 야누스 설치와 루나 게더링 1회 사용 기준입니다.</span>';
+    } else {
+      magnetPetDescription.hidden = true;
+      magnetPetDescription.innerHTML = "";
     }
   }
 
@@ -273,13 +530,14 @@
 
   // 시간 포맷팅 (ms -> MM:SS)
   function formatMs(ms) {
+    if (ms === Infinity) return "-";
     const totalSeconds = Math.ceil(ms / 1000);
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
     return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
   }
 
-  // 3. Web Audio API 사운드 생성
+  // 4. Web Audio API 사운드 생성
   function initAudio() {
     try {
       if (!audioCtx) {
@@ -380,7 +638,7 @@
     }
   }
 
-  // 4. 타이머 루프 제어 (고정밀 Date.now() 경과 시간 기준)
+  // 5. 타이머 루프 제어 (고정밀 Date.now() 경과 시간 기준)
   function handleStartClick() {
     if (isRunning || isCountingDown || isSessionDemoRunning) return;
 
@@ -444,6 +702,76 @@
     countdownTimerId = setTimeout(tick, 1000);
   }
 
+  function advanceHuntingTimers(elapsedMs, currentTime) {
+    let remainingStepMs = elapsedMs;
+
+    while (remainingStepMs > 0) {
+      let timeUntilJanusEvent = Infinity;
+      if (!isSkillAlerting && remainingSkillMs > 0) {
+        timeUntilJanusEvent = remainingSkillMs;
+      }
+
+      let timeUntilGatheringEvent = Infinity;
+      if (isLunaGatheringEnabled() && lunaGatheringNextAt !== null && lunaGatheringCount < LUNA_GATHERING_DAILY_LIMIT) {
+        timeUntilGatheringEvent = remainingLunaGatheringMs;
+      }
+
+      const stepMs = Math.min(remainingStepMs, timeUntilJanusEvent, timeUntilGatheringEvent);
+
+      if (stepMs === Infinity || stepMs <= 0) {
+        if (!isSkillAlerting && remainingSkillMs > 0) {
+          remainingSkillMs = Math.max(0, remainingSkillMs - remainingStepMs);
+        }
+        if (isLunaGatheringEnabled() && lunaGatheringNextAt !== null && lunaGatheringCount < LUNA_GATHERING_DAILY_LIMIT) {
+          remainingLunaGatheringMs = Math.max(0, remainingLunaGatheringMs - remainingStepMs);
+        }
+        break;
+      }
+
+      if (!isSkillAlerting && remainingSkillMs > 0) {
+        remainingSkillMs = Math.max(0, remainingSkillMs - stepMs);
+      }
+      if (isLunaGatheringEnabled() && lunaGatheringNextAt !== null && lunaGatheringCount < LUNA_GATHERING_DAILY_LIMIT) {
+        remainingLunaGatheringMs = Math.max(0, remainingLunaGatheringMs - stepMs);
+      }
+
+      remainingStepMs -= stepMs;
+
+      const janusExpired = (timeUntilJanusEvent === stepMs && remainingSkillMs === 0);
+      const gatheringTriggered = (timeUntilGatheringEvent === stepMs && remainingLunaGatheringMs === 0);
+
+      // Ordering rule: Janus expiration MUST be handled before Gathering activation
+      if (janusExpired) {
+        triggerSkillAlert();
+      }
+
+      if (gatheringTriggered) {
+        handleLunaGatheringActivation({ allowExtension: !janusExpired });
+      }
+    }
+  }
+
+  function handleLunaGatheringActivation(options = {}) {
+    const allowExtension = options.allowExtension ?? true;
+
+    if (lunaGatheringCount < LUNA_GATHERING_DAILY_LIMIT) {
+      lunaGatheringCount++;
+      saveLunaGatheringData();
+
+      if (magnetPetMode === "5" && allowExtension && !isSkillAlerting && remainingSkillMs > 0) {
+        applyLunaExtension();
+      }
+    }
+
+    if (lunaGatheringCount < LUNA_GATHERING_DAILY_LIMIT) {
+      remainingLunaGatheringMs = LUNA_GATHERING_INTERVAL_MS;
+      lunaGatheringNextAt = Date.now() + LUNA_GATHERING_INTERVAL_MS;
+    } else {
+      remainingLunaGatheringMs = 0;
+      lunaGatheringNextAt = null;
+    }
+  }
+
   function startTimers() {
     if (isRunning) return;
 
@@ -456,8 +784,36 @@
     if (!isSkillAlerting) {
       skillEndAt = Date.now() + remainingSkillMs;
     }
+
     if (isErdaEnabled && !isErdaAlerting) {
       erdaEndAt = Date.now() + remainingErdaMs;
+    }
+
+    // 루나 게더링 시작/재개 처리
+    if (isLunaGatheringEnabled()) {
+      if (!hasStartedLunaGatheringForSession) {
+        // 새 사냥 세션 시작 시 즉시 1회 등록
+        hasStartedLunaGatheringForSession = true;
+        if (lunaGatheringCount < LUNA_GATHERING_DAILY_LIMIT) {
+          lunaGatheringCount++;
+          saveLunaGatheringData();
+
+          if (magnetPetMode === "5") {
+            // Apply immediate extension at session start
+            applyLunaExtension();
+          }
+
+          remainingLunaGatheringMs = LUNA_GATHERING_INTERVAL_MS;
+          lunaGatheringNextAt = Date.now() + LUNA_GATHERING_INTERVAL_MS;
+        } else {
+          remainingLunaGatheringMs = 0;
+          lunaGatheringNextAt = null;
+        }
+      } else {
+        if (lunaGatheringCount < LUNA_GATHERING_DAILY_LIMIT) {
+          lunaGatheringNextAt = Date.now() + remainingLunaGatheringMs;
+        }
+      }
     }
 
     btnSessionStart.disabled = true;
@@ -466,25 +822,18 @@
     // 프리셋 버튼 변경 비활성화 (동작 중일 때 혼란 방지)
     togglePresetButtonsDisabled(true);
 
+    lastTickTime = Date.now();
+
     updateIntervalId = setInterval(() => {
+      checkKstDateReset();
+
       const currentTime = Date.now();
+      const elapsedMs = currentTime - lastTickTime;
+      lastTickTime = currentTime;
 
       remainingSessionMs = sessionEndAt - currentTime;
 
-      // 솔 야누스 타이머 틱
-      if (!isSkillAlerting) {
-        remainingSkillMs = skillEndAt - currentTime;
-        if (remainingSkillMs < 0) {
-          remainingSkillMs = 0;
-        }
-
-        // 설치기 타이머 만료 시 (에르다 샤워 미사용일 때만 독자 만료)
-        if (remainingSkillMs <= 0 && !isErdaEnabled) {
-          triggerSkillAlert();
-        }
-      } else {
-        remainingSkillMs = 0;
-      }
+      advanceHuntingTimers(elapsedMs, currentTime);
 
       // 에르다 샤워 타이머 틱
       if (isErdaEnabled) {
@@ -494,9 +843,12 @@
             remainingErdaMs = 0;
           }
 
-          // 에르다 샤워 만료 시 (싱크 만료로 처리)
           if (remainingErdaMs <= 0) {
-            triggerErdaSyncAlert();
+            if (magnetPetMode === "5") {
+              triggerErdaAlert(); // 5석펫: 에르다 샤워 단독 알림
+            } else {
+              triggerErdaSyncAlert(); // 0~3 / 4석펫: 기존 동기화 알림
+            }
           }
         } else {
           remainingErdaMs = 0;
@@ -530,6 +882,7 @@
   function triggerSkillAlert() {
     isSkillAlerting = true;
     remainingSkillMs = 0;
+    hideLunaExtensionPulse();
     updateDisplays();
 
     playAlertSound("skill");
@@ -545,8 +898,9 @@
     skillRestartTimeoutId = null;
     hideSkillAlert();
 
-    skillEndAt = Date.now() + (selectedSkillSeconds * 1000);
-    remainingSkillMs = selectedSkillSeconds * 1000;
+    const baseMs = JANUS_BASE_DURATION_MS_BY_LEVEL[selectedSkillSeconds] ?? (selectedSkillSeconds * 1000);
+    remainingSkillMs = baseMs;
+    skillEndAt = Date.now() + remainingSkillMs;
     updateDisplays();
   }
 
@@ -600,7 +954,8 @@
     hideSkillAlert();
 
     remainingErdaMs = 60 * 1000;
-    remainingSkillMs = selectedSkillSeconds * 1000;
+    const baseMs = JANUS_BASE_DURATION_MS_BY_LEVEL[selectedSkillSeconds] ?? (selectedSkillSeconds * 1000);
+    remainingSkillMs = baseMs;
 
     erdaEndAt = Date.now() + remainingErdaMs;
     skillEndAt = Date.now() + remainingSkillMs;
@@ -611,12 +966,19 @@
     if (!isRunning) return;
 
     isRunning = false;
-    clearInterval(updateIntervalId);
-    updateIntervalId = null;
+    if (updateIntervalId) {
+      clearInterval(updateIntervalId);
+      updateIntervalId = null;
+    }
 
-    // 멈춘 시점의 잔여 시간 확정 계산
     const currentTime = Date.now();
     remainingSessionMs = Math.max(0, sessionEndAt - currentTime);
+
+    // 루나 게더링 일시정지 처리
+    if (isLunaGatheringEnabled() && lunaGatheringNextAt !== null) {
+      remainingLunaGatheringMs = Math.max(0, lunaGatheringNextAt - currentTime);
+      lunaGatheringNextAt = null;
+    }
 
     // 야누스 타이머 일시정지 처리
     if (isSkillAlerting) {
@@ -626,8 +988,8 @@
         skillRestartTimeoutId = null;
       }
       hideSkillAlert();
-      remainingSkillMs = selectedSkillSeconds * 1000;
-    } else {
+      remainingSkillMs = JANUS_BASE_DURATION_MS_BY_LEVEL[selectedSkillSeconds] ?? (selectedSkillSeconds * 1000);
+    } else if (skillEndAt !== null) {
       remainingSkillMs = Math.max(0, skillEndAt - currentTime);
     }
 
@@ -641,7 +1003,7 @@
         }
         hideErdaAlert();
         remainingErdaMs = 60 * 1000;
-      } else {
+      } else if (erdaEndAt !== null) {
         remainingErdaMs = Math.max(0, erdaEndAt - currentTime);
       }
     }
@@ -652,6 +1014,7 @@
     // Enable presets on pause
     togglePresetButtonsDisabled(false);
     updateDemoButtonState();
+    updateDisplays();
   }
 
   function resetTimers(keepSessionFlash = false) {
@@ -666,6 +1029,11 @@
       overlay.classList.add("hidden");
     }
 
+    // 루나 게더링 세션 상태 리셋 (일일 0/230 카운트는 유지)
+    hasStartedLunaGatheringForSession = false;
+    lunaGatheringNextAt = null;
+    remainingLunaGatheringMs = LUNA_GATHERING_INTERVAL_MS;
+
     // 야누스 알림 해제
     if (skillRestartTimeoutId) {
       clearTimeout(skillRestartTimeoutId);
@@ -673,6 +1041,7 @@
     }
     isSkillAlerting = false;
     hideSkillAlert();
+    hideLunaExtensionPulse();
 
     // 에르다 샤워 알림 해제
     if (erdaRestartTimeoutId) {
@@ -716,7 +1085,7 @@
     }
 
     remainingSessionMs = selectedMaterialCount * MATERIAL_DURATION_MS;
-    remainingSkillMs = selectedSkillSeconds * 1000;
+    remainingSkillMs = JANUS_BASE_DURATION_MS_BY_LEVEL[selectedSkillSeconds] ?? (selectedSkillSeconds * 1000);
     remainingErdaMs = 60 * 1000;
 
     btnSessionStart.disabled = false;
@@ -937,8 +1306,43 @@
   function togglePresetButtonsDisabled(disabled) {
     toggleMaterialButtonsDisabled(disabled);
     skillPresets.forEach(btn => btn.disabled = disabled);
-    if (btnErdaEnabled) btnErdaEnabled.disabled = disabled;
+    if (btnErdaEnabled) {
+      const isJanusHighLevel = selectedSkillSeconds === 80 || selectedSkillSeconds === 120;
+      btnErdaEnabled.disabled = disabled || isJanusHighLevel;
+    }
     if (btnErdaDisabled) btnErdaDisabled.disabled = disabled;
+    magnetPetButtons.forEach(btn => btn.disabled = disabled);
+
+    if (lunaGatheringCountInput) lunaGatheringCountInput.disabled = disabled;
+    if (btnApplyLunaGatheringCount) btnApplyLunaGatheringCount.disabled = disabled;
+    if (btnResetLunaGatheringCount) btnResetLunaGatheringCount.disabled = disabled;
+  }
+
+  function applyManualLunaGatheringCount() {
+    if (isRunning || isCountingDown || isSessionDemoRunning) return;
+    if (!lunaGatheringCountInput) return;
+
+    let rawVal = parseInt(lunaGatheringCountInput.value, 10);
+    if (isNaN(rawVal)) {
+      lunaGatheringCountInput.value = String(lunaGatheringCount);
+      return;
+    }
+
+    const normalizedCount = Math.min(Math.max(rawVal, 0), LUNA_GATHERING_DAILY_LIMIT);
+    lunaGatheringCount = normalizedCount;
+    saveLunaGatheringData();
+    updateDisplays();
+  }
+
+  function resetManualLunaGatheringCount() {
+    if (isRunning || isCountingDown || isSessionDemoRunning) return;
+
+    const confirmed = window.confirm("오늘의 루나 게더링 사용 횟수를 0회로 초기화하시겠습니까?");
+    if (!confirmed) return;
+
+    lunaGatheringCount = 0;
+    saveLunaGatheringData();
+    updateDisplays();
   }
 
   function adjustMaterialCount(delta) {
@@ -957,6 +1361,7 @@
 
   function setErdaEnabled(enabled) {
     if (isRunning || isCountingDown || isSessionDemoRunning) return;
+    if (enabled && (selectedSkillSeconds === 80 || selectedSkillSeconds === 120)) return;
 
     isErdaEnabled = enabled;
     saveSettings();
@@ -1206,7 +1611,7 @@
   }
   // --- 뽀모도로 타이머 함수 끝 ---
 
-  // 5. 이벤트 리스너 바인딩
+  // 6. 이벤트 리스너 바인딩
   function setupEventListeners() {
     // 세션 타이머 제어
     btnSessionStart.addEventListener("click", handleStartClick);
@@ -1240,20 +1645,41 @@
         btn.classList.add("active");
 
         selectedSkillSeconds = parseInt(btn.dataset.seconds, 10);
-        remainingSkillMs = selectedSkillSeconds * 1000;
+        remainingSkillMs = JANUS_BASE_DURATION_MS_BY_LEVEL[selectedSkillSeconds] ?? (selectedSkillSeconds * 1000);
 
+        // 야누스 고레벨일 경우 에르다 자동 해제
+        if (selectedSkillSeconds === 80 || selectedSkillSeconds === 120) {
+          setErdaEnabled(false);
+        }
+
+        hideLunaExtensionPulse();
         updateDisplays();
         saveSettings();
       });
     });
 
-    // 체크리스트 작동 및 변경사항 로컬스토리지 연동
-    checklistItems.forEach(chk => {
-      chk.addEventListener("change", () => {
-        toggleChecklistItemClass(chk);
-        saveChecklist();
+    // 자석펫 모드 버튼 선택
+    magnetPetButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        setMagnetPetMode(btn.dataset.magnetPetMode);
       });
     });
+
+    // 루나 게더링 횟수 관리 버튼 및 엔터키 입력
+    if (btnApplyLunaGatheringCount) {
+      btnApplyLunaGatheringCount.addEventListener("click", applyManualLunaGatheringCount);
+    }
+    if (btnResetLunaGatheringCount) {
+      btnResetLunaGatheringCount.addEventListener("click", resetManualLunaGatheringCount);
+    }
+    if (lunaGatheringCountInput) {
+      lunaGatheringCountInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          applyManualLunaGatheringCount();
+        }
+      });
+    }
 
     // 뽀모도로 타이머 제어
     if (pomodoroHeader) {
@@ -1273,3 +1699,4 @@
   // 타이머 작동 시작
   document.addEventListener("DOMContentLoaded", init);
 })();
+
