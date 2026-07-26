@@ -501,6 +501,7 @@ function saveCalculatorState() {
     inputs: {
       currentMileage: $("currentMileage").value,
       waterRate: $("waterRate").value,
+      mmMarketRate: $("mmMarketRate") ? $("mmMarketRate").value : undefined,
       currentTier: $("currentTier").value,
       remainingToNext: $("remainingToNext").value,
       selectedTargetMvp: $("selectedTargetMvp").value,
@@ -558,6 +559,7 @@ function applySavedInputs(savedState) {
 
   if ($("currentMileage")) $("currentMileage").value = inputs.currentMileage ?? 0;
   if ($("waterRate")) $("waterRate").value = inputs.waterRate ?? 1600;
+  if ($("mmMarketRate") && inputs.mmMarketRate !== undefined) $("mmMarketRate").value = inputs.mmMarketRate;
   if ($("currentTier")) $("currentTier").value = inputs.currentTier ?? "bronze";
   if ($("remainingToNext")) $("remainingToNext").value = inputs.remainingToNext ?? 300_000;
   if ($("selectedTargetMvp")) $("selectedTargetMvp").value = inputs.selectedTargetMvp ?? 1_500_000;
@@ -1148,7 +1150,14 @@ function renderItemEfficiencyEmptyState(message) {
 }
 
 function renderItemEfficiencyResults(results, options) {
-  const { totalCount, validCount, excludedCount, includeMileage } = options;
+  const {
+    totalCount,
+    validCount,
+    excludedCount,
+    includeMileage,
+    mesoMarketRecoveryRate,
+    mesoMarketPrice,
+  } = options;
   const summaryEl = $("itemEfficiencySummary");
   const containerEl = $("itemEfficiencyTableContainer");
 
@@ -1174,22 +1183,61 @@ function renderItemEfficiencyResults(results, options) {
 
   let highlightHtml = "";
   if (topResult) {
-    if (topResult.cashOnlyProfitKrw > 0) {
-      const diffText = formatBreakEvenDiffText(topResult.expectedSalePrice, topResult.cashOnlyBreakEvenMeso).replace("본전보다 ", "");
-      const profitText = formatEfficiencyProfitText(topResult.cashOnlyProfitKrw);
-      highlightHtml = `
-        <div class="item-efficiency-best-item">
-          현재 입력한 시세에서는 <strong>${topResult.item.name}</strong>의 현금 사용 기준 회수율이 가장 높습니다.<br />
-          본전 경매장가보다 약 <strong>${diffText}</strong>, 1회 구매 기준 약 <strong>${profitText}</strong>입니다.
-        </div>
-      `;
+    const hasBenchmark = mesoMarketRecoveryRate !== null && mesoMarketRecoveryRate > 0;
+
+    if (hasBenchmark) {
+      const mmRateStr = mesoMarketRecoveryRate.toFixed(2);
+      const topRate = topResult.cashOnlyRecoveryRate;
+
+      if (topRate >= mesoMarketRecoveryRate) {
+        const diffP = (topRate - mesoMarketRecoveryRate).toFixed(2);
+        if (topResult.cashOnlyProfitKrw > 0) {
+          const diffText = formatBreakEvenDiffText(topResult.expectedSalePrice, topResult.cashOnlyBreakEvenMeso).replace("본전보다 ", "");
+          const profitText = formatEfficiencyProfitText(topResult.cashOnlyProfitKrw);
+          highlightHtml = `
+            <div class="item-efficiency-best-item">
+              현재 입력한 시세에서는 <strong>${topResult.item.name}</strong>의 현금 사용 기준 회수율이 가장 높습니다.<br />
+              본전 경매장가보다 약 <strong>${diffText}</strong>, 1회 구매 기준 약 <strong>${profitText}</strong>입니다.<br />
+              메소마켓 기준 회수율 ${mmRateStr}%보다 약 <strong>${diffP}%p</strong> 높습니다.
+            </div>
+          `;
+        } else {
+          highlightHtml = `
+            <div class="item-efficiency-best-item">
+              현재 입력한 시세에서는 흑자 품목이 없습니다.<br />
+              그중 <strong>${topResult.item.name}</strong>이 가장 높은 회수율(<strong>${topRate.toFixed(2)}%</strong>)을 보입니다.<br />
+              메소마켓 기준 회수율 ${mmRateStr}%보다 약 <strong>${diffP}%p</strong> 높습니다.
+            </div>
+          `;
+        }
+      } else {
+        const advP = (mesoMarketRecoveryRate - topRate).toFixed(2);
+        highlightHtml = `
+          <div class="item-efficiency-best-item">
+            현재 입력한 시세에서는 메소마켓 경로가 가장 높은 캐시 아이템보다 약 <strong>${advP}%p</strong> 유리합니다.
+          </div>
+        `;
+      }
     } else {
-      highlightHtml = `
-        <div class="item-efficiency-best-item">
-          현재 입력한 시세에서는 흑자 품목이 없습니다.<br />
-          그중 <strong>${topResult.item.name}</strong>이 가장 높은 회수율(<strong>${topResult.cashOnlyRecoveryRate.toFixed(2)}%</strong>)을 보입니다.
-        </div>
-      `;
+      if (topResult.cashOnlyProfitKrw > 0) {
+        const diffText = formatBreakEvenDiffText(topResult.expectedSalePrice, topResult.cashOnlyBreakEvenMeso).replace("본전보다 ", "");
+        const profitText = formatEfficiencyProfitText(topResult.cashOnlyProfitKrw);
+        highlightHtml = `
+          <div class="item-efficiency-best-item">
+            현재 입력한 시세에서는 <strong>${topResult.item.name}</strong>의 현금 사용 기준 회수율이 가장 높습니다.<br />
+            본전 경매장가보다 약 <strong>${diffText}</strong>, 1회 구매 기준 약 <strong>${profitText}</strong>입니다.<br />
+            <small style="color:#6b7280; font-weight:normal; display:inline-block; margin-top:4px;">※ 시장 시세에서 메소마켓 가격과 물통비율을 입력하면 메소마켓 경로와 비교할 수 있습니다.</small>
+          </div>
+        `;
+      } else {
+        highlightHtml = `
+          <div class="item-efficiency-best-item">
+            현재 입력한 시세에서는 흑자 품목이 없습니다.<br />
+            그중 <strong>${topResult.item.name}</strong>이 가장 높은 회수율(<strong>${topResult.cashOnlyRecoveryRate.toFixed(2)}%</strong>)을 보입니다.<br />
+            <small style="color:#6b7280; font-weight:normal; display:inline-block; margin-top:4px;">※ 시장 시세에서 메소마켓 가격과 물통비율을 입력하면 메소마켓 경로와 비교할 수 있습니다.</small>
+          </div>
+        `;
+      }
     }
   }
 
@@ -1197,8 +1245,37 @@ function renderItemEfficiencyResults(results, options) {
     summaryEl.innerHTML = summaryBoxesHtml + highlightHtml;
   }
 
-  const tableRowsHtml = results.map((res, index) => {
-    const rankText = `${index + 1}위`;
+  const hasBenchmark = mesoMarketRecoveryRate !== null && mesoMarketRecoveryRate > 0;
+  let insertionIndex = -1;
+  if (hasBenchmark) {
+    insertionIndex = results.findIndex((res) => res.cashOnlyRecoveryRate < mesoMarketRecoveryRate);
+    if (insertionIndex === -1) {
+      insertionIndex = results.length;
+    }
+  }
+
+  const mmBenchmarkRowHtml = hasBenchmark ? `
+    <tr class="meso-market-benchmark-row">
+      <td colspan="7">
+        <div class="meso-market-benchmark-line">
+          <span>메소마켓 기준</span>
+          <strong>회수율 ${mesoMarketRecoveryRate.toFixed(2)}%</strong>
+          <small>${formatNumber(mesoMarketPrice)} 메포 / 1억 메소</small>
+        </div>
+      </td>
+    </tr>
+  ` : "";
+
+  let benchmarkInserted = false;
+  const rowsHtmlArr = [];
+
+  results.forEach((res, index) => {
+    if (hasBenchmark && insertionIndex === index) {
+      rowsHtmlArr.push(mmBenchmarkRowHtml);
+      benchmarkInserted = true;
+    }
+
+    const rankText = `${index + 1}`;
     const itemCell = `
       <div class="efficiency-item-cell">
         <img src="${getIconPath(res.item.icon)}" alt="${res.item.name}" onerror="this.src='${FALLBACK_ICON}'" />
@@ -1235,7 +1312,7 @@ function renderItemEfficiencyResults(results, options) {
       `;
     }
 
-    return `
+    rowsHtmlArr.push(`
       <tr>
         <td>${rankText}</td>
         <td>${itemCell}</td>
@@ -1245,8 +1322,12 @@ function renderItemEfficiencyResults(results, options) {
         <td>${profitCell}</td>
         <td>${breakEvenCell}</td>
       </tr>
-    `;
-  }).join("");
+    `);
+  });
+
+  if (hasBenchmark && !benchmarkInserted && insertionIndex === results.length) {
+    rowsHtmlArr.push(mmBenchmarkRowHtml);
+  }
 
   if (containerEl) {
     containerEl.innerHTML = `
@@ -1263,7 +1344,7 @@ function renderItemEfficiencyResults(results, options) {
           </tr>
         </thead>
         <tbody>
-          ${tableRowsHtml}
+          ${rowsHtmlArr.join("")}
         </tbody>
       </table>
     `;
@@ -1272,6 +1353,7 @@ function renderItemEfficiencyResults(results, options) {
 
 function runItemEfficiencyComparison() {
   const waterRate = parseNumberInput($("waterRate").value);
+  const mesoMarketPrice = $("mmMarketRate") ? parseNumberInput($("mmMarketRate").value) : 0;
   const feePercent = AUCTION_FEE_RATE * 100;
   const includeMileage = $("includeMileageEfficiencyComparison") ? $("includeMileageEfficiencyComparison").checked : false;
 
@@ -1288,6 +1370,11 @@ function runItemEfficiencyComparison() {
   if (waterRate <= 0) {
     renderItemEfficiencyEmptyState("물통비율을 올바르게 입력해주세요.");
     return;
+  }
+
+  let mesoMarketRecoveryRate = null;
+  if (waterRate > 0 && mesoMarketPrice > 0) {
+    mesoMarketRecoveryRate = (waterRate / mesoMarketPrice) * 100;
   }
 
   const auctionPrices = getAuctionPrices();
@@ -1336,6 +1423,8 @@ function runItemEfficiencyComparison() {
     validCount: validEntries.length,
     excludedCount,
     includeMileage,
+    mesoMarketRecoveryRate,
+    mesoMarketPrice,
   });
 
   if (section) {
@@ -1368,6 +1457,7 @@ function resetInputs() {
 
   $("currentMileage").value = 0;
   $("waterRate").value = 1600;
+  if ($("mmMarketRate")) $("mmMarketRate").value = 2444;
   $("currentTier").value = "bronze";
   $("remainingToNext").value = 300_000;
   $("selectedTargetMvp").value = 1_500_000;

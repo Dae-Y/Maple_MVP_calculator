@@ -72,11 +72,16 @@ function mmMakeSummaryBox(label, value) {
 
 function calculateMesoMarketRoute() {
     const pointBudget = mmParseNumber(MM_$("mmPointBudget").value);
-    const marketRate = mmParseNumber(MM_$("mmMarketRate").value);
-    const waterRate = mmParseNumber(MM_$("mmWaterRate").value);
+    const marketRate = MM_$("mmMarketRate") ? mmParseNumber(MM_$("mmMarketRate").value) : 0;
+    const waterRate = MM_$("waterRate") ? mmParseNumber(MM_$("waterRate").value) : 0;
 
     if (pointBudget <= 0 || marketRate <= 0 || waterRate <= 0) {
-        alert("사용할 메이플포인트, 메소마켓 구매 희망가격, 물통비율을 올바르게 입력해주세요.");
+        const missing = [];
+        if (pointBudget <= 0) missing.push("사용할 넥슨캐시/메이플포인트");
+        if (marketRate <= 0) missing.push("시장 시세의 메소마켓 가격");
+        if (waterRate <= 0) missing.push("시장 시세의 물통비율");
+
+        alert(`${missing.join(", ")}을(를) 올바르게 입력해주세요.`);
         return;
     }
 

@@ -1126,5 +1126,327 @@ button.efficiency-button:hover {
   margin-top: 2px;
 }
 
+/* --- 기본 입력 콤팩트 대시보드 --- */
+.mvp-input-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.mvp-input-heading-row h2 {
+  margin: 0;
+}
+
+.mvp-input-notice {
+  margin: 0;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: #f3f4f6;
+  color: #4b5563;
+  font-size: 13px;
+  line-height: 1.45;
+  border: 1px solid #e5e7eb;
+}
+
+.mvp-primary-input-grid {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) minmax(190px, 1fr) minmax(210px, 1.1fr);
+  gap: 14px;
+  align-items: stretch;
+}
+
+.mvp-target-summary-row {
+  display: grid;
+  grid-template-columns: minmax(0, 2.4fr) minmax(220px, 0.9fr);
+  gap: 16px;
+  align-items: stretch;
+  margin-top: 20px;
+}
+
+.mvp-target-compact-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.mvp-subsection-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.mvp-subsection-heading h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.mvp-subsection-heading p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.mvp-target-tier-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  flex: 1;
+}
+
+.mvp-target-tier-grid .mvp-tier-button {
+  padding: 10px 6px;
+  border-radius: 14px;
+  gap: 4px;
+}
+
+.mvp-target-tier-grid .mvp-tier-button img {
+  width: 38px;
+  height: 38px;
+}
+
+.mvp-target-tier-grid .mvp-tier-button span {
+  font-size: 14px;
+}
+
+.mvp-target-tier-grid .mvp-tier-button small {
+  font-size: 11px;
+}
+
+.mvp-current-total-card {
+  margin-top: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* --- 공유 시장 시세 섹션 --- */
+.shared-market-section {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.shared-market-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.shared-market-heading h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.shared-market-heading p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.shared-market-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 370px) minmax(280px, 400px);
+  gap: 20px;
+  justify-content: start;
+  align-items: start;
+}
+
+.shared-market-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.shared-market-field label {
+  display: block;
+  margin-bottom: 4px;
+  color: #374151;
+  font-weight: 700;
+}
+
+.shared-market-help {
+  margin: 0 0 8px;
+  color: #64748b;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.shared-market-field .input-with-suffix {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.shared-market-field .input-with-suffix input {
+  flex: 1;
+  min-width: 110px;
+}
+
+.shared-market-field .input-with-suffix span {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.field-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #374151;
+  font-weight: 700;
+}
+
+/* --- 모든 버튼 및 셀렉트에 메이플스토리 폰트 적용 --- */
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+select {
+  font-family: "Maplestory", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.actions button {
+  min-height: 48px;
+  padding-inline: 20px;
+  white-space: nowrap;
+}
+
+/* --- 커스텀 캐시 아이템 서브섹션 스타일 --- */
+.custom-item-subsection {
+  margin-top: 22px;
+  padding-top: 22px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.custom-item-subsection-heading {
+  margin-bottom: 16px;
+}
+
+.custom-item-subsection-heading h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+
+.custom-item-subsection-heading p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* --- 하단 메소마켓 계산기 --- */
+.meso-market-compact-form {
+  display: grid;
+  grid-template-columns: minmax(220px, 480px) auto;
+  gap: 14px;
+  align-items: end;
+  justify-content: start;
+}
+
+.meso-market-shared-note {
+  margin: 12px 0 0;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+/* --- 가성비 비교 테이블 메소마켓 기준 구분선 로우 --- */
+.meso-market-benchmark-row td {
+  padding: 8px 14px !important;
+  background: #f8fafc;
+  border-top: 2px dashed #cbd5e1;
+  border-bottom: 2px dashed #cbd5e1;
+}
+
+.meso-market-benchmark-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #334155;
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+
+.meso-market-benchmark-line span {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #6366f1;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.meso-market-benchmark-line strong {
+  color: #1e1b4b;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.meso-market-benchmark-line small {
+  color: #64748b;
+  font-size: 12px;
+}
+
+/* --- 반응형 쿼리 추가 --- */
+@media (max-width: 980px) {
+  .mvp-primary-input-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .mvp-target-summary-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .shared-market-grid {
+    grid-template-columns: 1fr;
+    justify-content: stretch;
+  }
+
+  .shared-market-field {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+@media (max-width: 620px) {
+  .mvp-primary-input-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .meso-market-compact-form {
+    grid-template-columns: 1fr;
+    justify-content: stretch;
+  }
+
+  .meso-market-compact-form button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .mvp-target-tier-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+
+
 
 

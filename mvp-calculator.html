@@ -64,9 +64,15 @@
 
   <main class="container">
     <section class="card">
-      <h2>기본 입력</h2>
+      <div class="mvp-input-heading-row">
+        <h2>기본 입력</h2>
 
-      <div class="input-grid">
+        <p class="mvp-input-notice">
+          ※ 경매장 수수료는 3%로 계산합니다. 첫 MVP작이라면 실버 이상일 때 캐시 아이템을 경매장에 판매하세요.
+        </p>
+      </div>
+
+      <div class="mvp-primary-input-grid">
         <label>
           <span>현재 내 등급</span>
           <select id="currentTier" class="select-input">
@@ -88,28 +94,12 @@
         </label>
 
         <label>
-          <span>물통비율</span>
-          <div class="input-with-unit">
-            <input id="waterRate" type="number" min="0" value="1600" />
-            <span>원 / 1억 메소</span>
-          </div>
-        </label>
-
-        <label>
           <span id="remainingToNextLabel">다음 등급까지 남은 캐시</span>
           <div class="input-with-unit">
             <input id="remainingToNext" type="number" min="0" value="300000" />
             <span>캐시</span>
           </div>
         </label>
-
-        <div class="fee-display">
-          <div class="inline-title">
-            <span>경매장 수수료</span>
-            <strong>3%</strong>
-          </div>
-          <small>실버 이상일 때 캐시템을 경매장에 판매하세요.</small>
-        </div>
 
         <label class="checkbox-row">
           <input id="disableMileage" type="checkbox" />
@@ -120,24 +110,57 @@
         </label>
       </div>
 
-      <div class="computed-mvp-box">
-        <span>계산된 현재 MVP 누적금액</span>
-        <strong id="computedCurrentMvp">0 캐시</strong>
-        <small id="computedCurrentMvpNote">현재 등급과 다음 등급까지 남은 캐시를 기준으로 자동 계산됩니다.</small>
+      <div class="mvp-target-summary-row">
+        <section class="mvp-target-compact-panel">
+          <div class="mvp-subsection-heading">
+            <h3>목표 MVP 등급</h3>
+            <p>아이콘을 클릭해서 목표 등급을 선택하세요.</p>
+          </div>
+
+          <input id="selectedTargetMvp" type="hidden" value="1500000" />
+          <div id="mvpTierList" class="mvp-tier-list"></div>
+        </section>
+
+        <aside class="mvp-current-total-card computed-mvp-box">
+          <span>계산된 현재 MVP 누적금액</span>
+          <strong id="computedCurrentMvp">0 캐시</strong>
+          <small id="computedCurrentMvpNote">현재 등급과 다음 등급까지 남은 캐시를 기준으로 자동 계산됩니다.</small>
+        </aside>
       </div>
 
-      <div class="mvp-target-area">
-        <div class="mvp-target-header">
-          <h3>목표 MVP 등급</h3>
-          <p>아이콘을 클릭해서 목표 등급을 선택하세요.</p>
+      <section class="shared-market-section">
+        <div class="shared-market-heading">
+          <h3>시장 시세</h3>
+          <p>캐시 아이템 가성비 비교와 메소마켓 계산에 함께 사용됩니다.</p>
         </div>
 
-        <input id="selectedTargetMvp" type="hidden" value="1500000" />
-        <div id="mvpTierList" class="mvp-tier-list"></div>
-      </div>
+        <div class="shared-market-grid">
+          <div class="shared-market-field field-group">
+            <label for="waterRate">물통비율</label>
+            <p class="shared-market-help">
+              1억 메소를 현금 거래로 판매할 때의 가격입니다.
+            </p>
+            <div class="input-with-suffix input-with-unit">
+              <input id="waterRate" type="number" min="0" value="1600" />
+              <span>원 / 1억 메소</span>
+            </div>
+          </div>
+
+          <div class="shared-market-field field-group">
+            <label for="mmMarketRate">메소마켓 가격</label>
+            <p class="shared-market-help">
+              메소마켓에서 1억 메소를 구매할 때의 희망 가격입니다.
+            </p>
+            <div class="input-with-suffix input-with-unit">
+              <input id="mmMarketRate" type="number" min="0" value="2444" />
+              <span>메포 / 1억 메소</span>
+            </div>
+          </div>
+        </div>
+      </section>
     </section>
 
-    <section class="card">
+    <section class="card cash-item-market-card">
       <div class="cash-price-section-header">
         <div class="cash-price-section-copy">
           <h2>캐시 아이템 경매장 가격</h2>
@@ -159,56 +182,54 @@
       </div>
 
       <div id="itemList" class="item-list"></div>
-    </section>
 
-    <section class="card custom-item-card">
-      <div class="section-header">
-        <div>
-          <h2>커스텀 캐시 아이템 추가</h2>
+      <section class="custom-item-subsection">
+        <div class="custom-item-subsection-heading">
+          <h3>커스텀 캐시 아이템 추가</h3>
           <p>리스트에 없는 아이템도 임시로 추가해서 계산에 사용할 수 있습니다. 이미지는 기본 아이콘으로 표시됩니다.</p>
         </div>
-      </div>
 
-      <div class="custom-item-grid">
-        <label>
-          <span>아이템 이름</span>
-          <input id="customItemName" class="text-input" type="text" placeholder="예: 새 캐시 아이템" />
-        </label>
+        <div class="custom-item-grid">
+          <label>
+            <span>아이템 이름</span>
+            <input id="customItemName" class="text-input" type="text" placeholder="예: 새 캐시 아이템" />
+          </label>
 
-        <label>
-          <span>캐시 가격</span>
-          <div class="input-with-unit">
-            <input id="customItemCashPrice" type="number" min="0" placeholder="예: 9900" />
-            <span>캐시</span>
-          </div>
-        </label>
+          <label>
+            <span>캐시 가격</span>
+            <div class="input-with-unit">
+              <input id="customItemCashPrice" type="number" min="0" placeholder="예: 9900" />
+              <span>캐시</span>
+            </div>
+          </label>
 
-        <label class="checkbox-row compact-checkbox">
-          <input id="customItemMileage" type="checkbox" />
-          <div>
-            <span>마일리지 적용 품목</span>
-            <small>30% 마일리지 할인이 가능한 아이템이면 체크하세요.</small>
-          </div>
-        </label>
+          <label class="checkbox-row compact-checkbox">
+            <input id="customItemMileage" type="checkbox" />
+            <div>
+              <span>마일리지 적용 품목</span>
+              <small>30% 마일리지 할인이 가능한 아이템이면 체크하세요.</small>
+            </div>
+          </label>
 
-        <button id="addCustomItemBtn" type="button" class="add-item-button">
-          캐시 아이템 추가
-        </button>
-      </div>
+          <button id="addCustomItemBtn" type="button" class="add-item-button">
+            캐시 아이템 추가
+          </button>
+        </div>
+      </section>
     </section>
 
     <section class="actions">
       <div class="action-button-tooltip-wrapper">
-        <button id="calculateBtn" aria-describedby="calculateButtonTooltip">계산하기</button>
+        <button id="calculateBtn" aria-describedby="calculateButtonTooltip">MVP작 계산</button>
         <span id="calculateButtonTooltip" class="action-button-tooltip" role="tooltip">
-          목표 MVP 등급까지 필요한 구매 조합과 예상 손익을 계산합니다.
+          목표 MVP 등급을 달성하기 위한 구매 조합을 계산합니다.
         </span>
       </div>
 
       <div class="action-button-tooltip-wrapper">
-        <button id="compareItemEfficiencyButton" type="button" class="efficiency-button" aria-describedby="efficiencyButtonTooltip">가성비 비교</button>
+        <button id="compareItemEfficiencyButton" type="button" class="efficiency-button" aria-describedby="efficiencyButtonTooltip">캐시템 가성비 계산</button>
         <span id="efficiencyButtonTooltip" class="action-button-tooltip" role="tooltip">
-          입력한 경매장 시세로 캐시 아이템별 회수율과 손익을 비교합니다.
+          입력한 캐시 아이템 시세의 회수율과 손익을 비교합니다.
         </span>
       </div>
     </section>
@@ -314,36 +335,26 @@
         </div>
       </div>
 
-      <div class="meso-market-grid">
-        <label>
-          <span>사용할 넥슨캐시 / 메이플포인트</span>
+      <div class="meso-market-compact-form">
+        <div class="field-group">
+          <label for="mmPointBudget">
+            사용할 넥슨캐시 / 메이플포인트
+          </label>
           <div class="input-with-unit">
             <input id="mmPointBudget" type="text" inputmode="text" lang="ko" autocomplete="off" autocorrect="off"
               autocapitalize="off" spellcheck="false" value="100000" />
             <span>메포</span>
           </div>
-        </label>
-
-        <label>
-          <span>메소마켓 구매 희망가격</span>
-          <div class="input-with-unit">
-            <input id="mmMarketRate" type="number" min="0" value="2444" />
-            <span>메포 / 1억 메소</span>
-          </div>
-        </label>
-
-        <label>
-          <span>물통비율</span>
-          <div class="input-with-unit">
-            <input id="mmWaterRate" type="number" min="0" value="1600" />
-            <span>원 / 1억 메소</span>
-          </div>
-        </label>
+        </div>
 
         <button id="mmCalculateBtn" type="button" class="add-item-button">
           메소마켓 계산
         </button>
       </div>
+
+      <p class="meso-market-shared-note">
+        위 시장 시세의 메소마켓 가격과 물통비율을 기준으로 계산합니다.
+      </p>
 
       <div id="mmResultSection" class="meso-market-result hidden">
         <div id="mmSummaryGrid" class="summary-grid"></div>
